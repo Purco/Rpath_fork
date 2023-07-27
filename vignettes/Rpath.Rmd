@@ -26,7 +26,7 @@ open source version of Ecopath with Ecosim]).
 
 
 ```{r}
-remotes::install_github('NOAA-EDAB/Rpath')
+# remotes::install_github('Purco/Rpath_fork')
 ```
 
 
@@ -37,6 +37,8 @@ knitr::opts_chunk$set(
   collapse = T)
 library(Rpath); library(data.table)
 ```
+
+
 
 ## Setting up Ecopath
 
