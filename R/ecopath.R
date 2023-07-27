@@ -15,6 +15,8 @@
 #'@return Returns an Rpath object that can be supplied to the rsim.scenario function.
 #'@import data.table
 #'@export
+#'
+#'Test modif 1
 rpath <- function(Rpath.params, eco.name = NA, eco.area = 1){
   #Need to define variables to eliminate check() note about no visible binding
   Type <- Group <- DetInput <- ProdCons <- PB <- QB <- noB <- noEE <- alive <- NULL
