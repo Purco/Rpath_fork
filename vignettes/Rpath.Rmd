@@ -21,6 +21,16 @@ coincidental.  To see the underlying mathematics please refer to Lucey et al.
 (in prep^[Lucey et al. in prep. Improving the EBFM toolbox with an alternative 
 open source version of Ecopath with Ecosim]).
 
+
+
+
+
+```{r}
+remotes::install_github('NOAA-EDAB/Rpath')
+```
+
+
+
 ```{r rpath load, echo = F}
 knitr::opts_chunk$set(
   comment = '#>',
