@@ -26,7 +26,7 @@ open source version of Ecopath with Ecosim]).
 
 
 ```{r}
-# remotes::install_github('Purco/Rpath_fork')
+remotes::install_github('Purco/Rpath_fork')
 ```
 
 
