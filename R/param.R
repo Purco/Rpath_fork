@@ -175,9 +175,10 @@ check.rpath.params <- function(Rpath.params){
     warning('Model must contain at least 1 detrital group')
     w <- w + 1
   }
-  # if(nrow(Rpath.params$model[Type == 3, ]) == 0){
-  #   warning('Model must contain at least 1 fleet')
-  # }
+  if(nrow(Rpath.params$model[Type == 3, ]) == 0){
+    warning('Model must contain at least 1 fleet')
+    w <- w + 1
+  }
   
   #Check that there is the proper number of columns
   n.groups <- nrow(Rpath.params$model)
