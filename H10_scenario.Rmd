@@ -1,0 +1,17 @@
+---
+title: "Rpath using R Ecosystem"
+author: "Ralien Purco"
+date: "`r Sys.Date()`"
+---
+
+Test for productivity hypothesis (H10 EWE software)
+
+
+```{r, echo = F}
+remotes::install_github('Purco/Rpath_fork')
+```
+
+```{r rpath load, echo = F}
+library(Rpath); library(data.table)
+```
+
