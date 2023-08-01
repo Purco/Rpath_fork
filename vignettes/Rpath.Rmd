@@ -1,6 +1,6 @@
 ---
 title: "Rpath using R Ecosystem"
-author: "Sean M. Lucey"
+author: "Sean M. Lucey revisited by Ralien Purco"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -20,8 +20,6 @@ ecosystem, R Ecosystem.  Any resemblance to an actual ecosystem is purely
 coincidental.  To see the underlying mathematics please refer to Lucey et al. 
 (in prep^[Lucey et al. in prep. Improving the EBFM toolbox with an alternative 
 open source version of Ecopath with Ecosim]).
-
-
 
 
 
@@ -77,6 +75,9 @@ stgroups <- c(rep(NA, 3), rep('Roundfish1', 2), rep('Roundfish2', 2),
 
 REco.params <- create.rpath.params(group = groups, type = types, stgroup = stgroups)
 ```
+
+
+
 
 REco.params now contains a list of 4 objects: model, diet, stanzas, and pedigree.
 The majority of the parameters are populated with NA save those that have logical
