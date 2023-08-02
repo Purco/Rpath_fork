@@ -28,7 +28,13 @@ create.rpath.params <- function(group, type, stgroup = NA){
   pred.group  <- group[which(type < 2)]
   prey.group  <- group[which(type < 3)]
   det.group   <- group[which(type == 2)]
-  fleet.group <- group[which(type == 3)]
+  # fleet.group <- group[which(type == 3)]
+  if (3 %in% type) {
+    fleet.group <- group[which(type == 3)]
+  } else {
+    fleet.group <- NA
+  }
+  
   
   #Model parameters
   model <- data.table(Group       = group, 
