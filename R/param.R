@@ -49,24 +49,45 @@ create.rpath.params <- function(group, type, stgroup = NA){
                       DetInput    = as.numeric(NA))
 
   #Add detritial groups
-  for(i in 1:length(det.group)){
-    model[Group %in% det.group, DetInput := 0]
-    model[, V1 := as.numeric(NA)]
-    setnames(model, "V1", det.group[i])
+  # for(i in 1:length(det.group)){
+  #   model[Group %in% det.group, DetInput := 0]
+  #   model[, V1 := as.numeric(NA)]
+  #   setnames(model, "V1", det.group[i])
+  # }
+  #   
+  # #Add fleets twice - Landings and Discards
+  # for(i in 1:length(fleet.group)){
+  #   model[, V1 := c(rep(0, length(group) - length(fleet.group)), 
+  #                   rep(NA, length(fleet.group)))]
+  #   setnames(model, "V1", fleet.group[i])
+  # }
+  # for(i in 1:length(fleet.group)){
+  #   model[, V1 := c(rep(0, length(group) - length(fleet.group)), 
+  #                   rep(NA, length(fleet.group)))]
+  #   setnames(model, "V1", paste(fleet.group[i], '.disc', sep = ''))
+  # }
+  # Rpath.params$model <- model
+  
+  # Add fleets twice - Landings and Discards
+  if (!is.na(fleet.group)) {
+    for (i in 1:length(fleet.group)) {
+      model[, V1 := c(rep(0, length(group) - length(fleet.group)), 
+                      rep(NA, length(fleet.group)))]
+      setnames(model, "V1", as.character(fleet.group[i]))
+    }
+    for (i in 1:length(fleet.group)) {
+      model[, V1 := c(rep(0, length(group) - length(fleet.group)), 
+                      rep(NA, length(fleet.group)))]
+      setnames(model, "V1", paste(as.character(fleet.group[i]), '.disc', sep = ''))
+    }
   }
-    
-  #Add fleets twice - Landings and Discards
-  for(i in 1:length(fleet.group)){
-    model[, V1 := c(rep(0, length(group) - length(fleet.group)), 
-                    rep(NA, length(fleet.group)))]
-    setnames(model, "V1", fleet.group[i])
-  }
-  for(i in 1:length(fleet.group)){
-    model[, V1 := c(rep(0, length(group) - length(fleet.group)), 
-                    rep(NA, length(fleet.group)))]
-    setnames(model, "V1", paste(fleet.group[i], '.disc', sep = ''))
-  }
+  
   Rpath.params$model <- model
+  
+  
+  
+  
+  
   
   #Diet matrix
   diet <- data.table(Group = c(prey.group, 'Import'))
