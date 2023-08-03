@@ -123,8 +123,7 @@ REco.params$model[, Unassim := c(rep(0.2, 6), rep(0.4, 2), rep(NA, 2))]
 
 #Detrital Fate
 REco.params$model[, Detritus := c(rep(1, 9), rep(0, 1))]
-
-# REco.params$model[, Discards := c(rep(0, 22), rep(1, 3))]
+REco.params$model[, Discards := c(rep(NA,10))]
 # 
 # #Fisheries
 # #Landings
@@ -202,9 +201,7 @@ knitr::kable(REco.params$pedigree, caption = 'Pedigree parameters for R Ecosyste
 ```
 
 ## Running Ecopath
-```{r}
-str(rpath)
-```
+
 
 After creating the parameter object, running ecopath in R is relatively 
 straightforward.  It is just the function `rpath` supplied with the parameter object.

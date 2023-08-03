@@ -277,23 +277,28 @@ check.rpath.params <- function(Rpath.params){
     warning('Model must contain at least 1 detrital group')
     w <- w + 1
   }
-  if(nrow(Rpath.params$model[Type == 3, ]) == 0){
-    warning('Model must contain at least 1 fleet')
-    w <- w + 1
-  }
+ # delete (PR)
+  #  if(nrow(Rpath.params$model[Type == 3, ]) == 0){
+  #   warning('Model must contain at least 1 fleet')
+  #   w <- w + 1
+  # }
   
   #Check that there is the proper number of columns
+  
+  
   n.groups <- nrow(Rpath.params$model)
   n.living <- length(Rpath.params$model[Type <= 1, Group])
   n.dead   <- length(Rpath.params$model[Type == 2, Group])
-  n.fleet  <- length(Rpath.params$model[Type == 3, Group])
-  if(ncol(Rpath.params$model) != 10 + n.dead + 2 * n.fleet){
-    warning('Model does not have the correct number of column.  There should be 10 
-         columns plus one for each detrital group plus two for each fleet group 
-         (landings and discards).  Please double check your columns')
-    w <- w + 1
-  }
-    
+  
+  # delete (PR)
+  # n.fleet  <- length(Rpath.params$model[Type == 3, Group])
+  # if(ncol(Rpath.params$model) != 10 + n.dead + 2 * n.fleet){
+  #   warning('Model does not have the correct number of column.  There should be 10 
+  #        columns plus one for each detrital group plus two for each fleet group 
+  #        (landings and discards).  Please double check your columns')
+  #   w <- w + 1
+  # }
+  #   
   #Check that either biomass or EE is entered and not both
   if(length(Rpath.params$model[is.na(Biomass) & is.na(EE) & Type < 2, Group]) > 0){
     warning(paste(Rpath.params$model[is.na(Biomass) & is.na(EE) & Type < 2, Group], 
@@ -415,34 +420,36 @@ check.rpath.params <- function(Rpath.params){
     w <- w + 1
   }
   
-  #Check that landings and discards are numbers for type < 3
-  fleet.matrix <- Rpath.params$model[1:(n.groups - n.fleet), (11 + n.dead):ncol(Rpath.params$model), with = F]
-
-  if(length(which(is.na(fleet.matrix))) > 0){
-    na.group <- which(is.na(fleet.matrix))
-    for(i in 1:length(na.group)) while(na.group[i] > n.groups) na.group[i] <- 
-      na.group[i] - n.groups
-    na.group <- unique(na.group)
-    warning(paste(Rpath.params$model[na.group, Group], 
-               'one or more catches are NA...set to >= 0 \n', sep = ' '))
-    w <- w + 1
-  }
   
-  #Check that fleets aren't catching other fleets
-  fleet.matrix.2 <- Rpath.params$model[(n.groups - n.fleet + 1):n.groups, (11 + n.dead):
-                                ncol(Rpath.params$model), with = F]
-  if(length(which(!is.na(fleet.matrix.2))) > 0){
-    not.na.group <- which(!is.na(fleet.matrix.2))
-    for(i in 1:length(not.na.group)){
-      while(not.na.group[i] > n.fleet){
-        not.na.group[i] <- not.na.group[i] - n.fleet
-        not.na.group <- unique(not.na.group)
-      }
-    }
-    warning(paste(Rpath.params$model[not.na.group + (n.groups - n.fleet), Group], 
-               'are catching another fleet...set to NA \n', sep = ' '))
-    w <- w + 1
-  }
+  # delete (PR)
+  # #Check that landings and discards are numbers for type < 3
+  # fleet.matrix <- Rpath.params$model[1:(n.groups - n.fleet), (11 + n.dead):ncol(Rpath.params$model), with = F]
+  # 
+  # if(length(which(is.na(fleet.matrix))) > 0){
+  #   na.group <- which(is.na(fleet.matrix))
+  #   for(i in 1:length(na.group)) while(na.group[i] > n.groups) na.group[i] <- 
+  #     na.group[i] - n.groups
+  #   na.group <- unique(na.group)
+  #   warning(paste(Rpath.params$model[na.group, Group], 
+  #              'one or more catches are NA...set to >= 0 \n', sep = ' '))
+  #   w <- w + 1
+  # }
+  # 
+  # #Check that fleets aren't catching other fleets
+  # fleet.matrix.2 <- Rpath.params$model[(n.groups - n.fleet + 1):n.groups, (11 + n.dead):
+  #                               ncol(Rpath.params$model), with = F]
+  # if(length(which(!is.na(fleet.matrix.2))) > 0){
+  #   not.na.group <- which(!is.na(fleet.matrix.2))
+  #   for(i in 1:length(not.na.group)){
+  #     while(not.na.group[i] > n.fleet){
+  #       not.na.group[i] <- not.na.group[i] - n.fleet
+  #       not.na.group <- unique(not.na.group)
+  #     }
+  #   }
+  #   warning(paste(Rpath.params$model[not.na.group + (n.groups - n.fleet), Group], 
+  #              'are catching another fleet...set to NA \n', sep = ' '))
+  #   w <- w + 1
+  # }
 
   #Diet
   #Check that columns sum to 1
