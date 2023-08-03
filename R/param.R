@@ -416,9 +416,8 @@ check.rpath.params <- function(Rpath.params){
   }
   
   #Check that landings and discards are numbers for type < 3
-  # fleet.matrix <- Rpath.params$model[1:(n.groups - n.fleet), (11 + n.dead):ncol(Rpath.params$model), 
-  #                           with = F]
-  fleet.matrix <- Rpath.params$model[(n.groups - n.fleet + 1):n.groups, (11 + n.dead):(10 + n.dead + n.fleet), with = FALSE]
+  fleet.matrix <- Rpath.params$model[1:(n.groups - n.fleet), (11 + n.dead):ncol(Rpath.params$model), with = F]
+
   if(length(which(is.na(fleet.matrix))) > 0){
     na.group <- which(is.na(fleet.matrix))
     for(i in 1:length(na.group)) while(na.group[i] > n.groups) na.group[i] <- 

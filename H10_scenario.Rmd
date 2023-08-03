@@ -202,6 +202,9 @@ knitr::kable(REco.params$pedigree, caption = 'Pedigree parameters for R Ecosyste
 ```
 
 ## Running Ecopath
+```{r}
+str(rpath)
+```
 
 After creating the parameter object, running ecopath in R is relatively 
 straightforward.  It is just the function `rpath` supplied with the parameter object.
