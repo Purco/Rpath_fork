@@ -154,7 +154,7 @@ create.rpath.params <- function(group, type, stgroup = NA)
   
 
 # Handle case when nstanzas is NA
-if (is.na(nstanzas)) {  stgroups <- data.table(StGroupNum  = NA,
+if (length(nstanzas) == 0){  stgroups <- data.table(StGroupNum  = NA,
                                                StanzaGroup = NA,
                                                nstanzas    = NA,
                                                VBGF_Ksp    = NA,
