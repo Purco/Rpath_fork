@@ -231,10 +231,13 @@ Rpath.params$stanzas$stindiv <- stindiv
                          QB      = 1,
                          Diet    = 1)
   #Add fleet pedigree
-  for(i in 1:length(fleet.group)){
+  if (!is.na(fleet.group)) { 
+    for(i in 1:length(fleet.group)){
     pedigree[, V1 := 1]
-    setnames(pedigree, "V1", fleet.group[i])
-  }
+    setnames(pedigree, "V1", fleet.group[i])}
+    } else {
+    pedigree[, V1 := NA]  # add PR
+  } 
   Rpath.params$pedigree <- pedigree
   class(Rpath.params) <- 'Rpath.params'
   return(Rpath.params)
