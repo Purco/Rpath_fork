@@ -194,27 +194,29 @@ stgroups <- data.table(StGroupNum  = 1:NStanzaGroups,
                        Z          = NA,
                        Leading    = NA)
       
-} else {
-      
-      Rpath.params$stanzas$NStanzaGroups <- 0
-      
-      stgroups <- data.table(StGroupNum  = NA,
-                             StanzaGroup = NA,
-                             nstanzas    = NA,
-                             VBGF_Ksp    = NA,
-                             VBGF_d      = NA,
-                             Wmat        = NA,
-                             RecPower    = NA)
-      
-      stindiv <- data.table(StGroupNum = NA,
-                            StanzaNum  = NA,
-                            GroupNum   = NA,
-                            Group      = NA,
-                            First      = NA,
-                            Last       = NA,
-                            Z          = NA,
-                            Leading    = NA)
-}
+} 
+
+# else {
+#       
+#       Rpath.params$stanzas$NStanzaGroups <- 0
+#       
+#       stgroups <- data.table(StGroupNum  = NA,
+#                              StanzaGroup = NA,
+#                              nstanzas    = NA,
+#                              VBGF_Ksp    = NA,
+#                              VBGF_d      = NA,
+#                              Wmat        = NA,
+#                              RecPower    = NA)
+#       
+#       stindiv <- data.table(StGroupNum = NA,
+#                             StanzaNum  = NA,
+#                             GroupNum   = NA,
+#                             Group      = NA,
+#                             First      = NA,
+#                             Last       = NA,
+#                             Z          = NA,
+#                             Leading    = NA)
+# }
     
 Rpath.params$stanzas$stgroups <- stgroups
 Rpath.params$stanzas$stindiv <- stindiv
@@ -494,6 +496,7 @@ if(w == 0){
 #'  parameters for multistanza groups.  If not specified a blank stanza list will 
 #'  be created.
 #'@param pedfile file location of the flat file containg the pedgigree parameters.
+#'
 #'@return Outputs an Rpath.param object that can be used for Rpath and subsequently
 #'  Rsim.  (NOTE: This does function does not ensure data is correct or in the 
 #'  correct locations...run check.rpath.param to ensure the appropriate columns are
