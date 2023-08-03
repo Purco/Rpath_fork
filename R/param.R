@@ -28,6 +28,7 @@ create.rpath.params <- function(group, type, stgroup = NA){
   pred.group  <- group[which(type < 2)]
   prey.group  <- group[which(type < 3)]
   det.group   <- group[which(type == 2)]
+  
   # fleet.group <- group[which(type == 3)]
   if (3 %in% type) {
     fleet.group <- group[which(type == 3)]
@@ -86,9 +87,6 @@ create.rpath.params <- function(group, type, stgroup = NA){
   
   
   
-  
-  
-  
   #Diet matrix
   diet <- data.table(Group = c(prey.group, 'Import'))
   for(i in 1:length(pred.group)){
@@ -105,52 +103,127 @@ create.rpath.params <- function(group, type, stgroup = NA){
     NStanzaGroups <- length(StanzaGroups)
     Rpath.params$stanzas$NStanzaGroups <- NStanzaGroups
     
-    stgroups <- data.table(StGroupNum  = 1:NStanzaGroups,
-                           StanzaGroup = StanzaGroups,
-                           nstanzas    = nstanzas,
-                           VBGF_Ksp    = NA,
-                           VBGF_d      = 0.66667,
-                           Wmat        = NA,
-                           BAB         = 0,
-                           RecPower    = 1)
-    
-    #Individual Stanza Parameters
-    ind.stanza.group <- model[!is.na(stgroup), Group]
-    ieco <- which(!is.na(stgroup))
-    stindiv <- data.table(StGroupNum = rep(stgroups[, StGroupNum], 
-                                           stgroups[, nstanzas]),
-                          StanzaNum  = as.integer(0),
-                          GroupNum   = ieco,
-                          Group      = ind.stanza.group,
-                          First      = NA,
-                          Last       = NA,
-                          Z          = NA,
-                          Leading    = NA)
+  #   stgroups <- data.table(StGroupNum  = 1:NStanzaGroups,
+  #                          StanzaGroup = StanzaGroups,
+  #                          nstanzas    = nstanzas,
+  #                          VBGF_Ksp    = NA,
+  #                          VBGF_d      = 0.66667,
+  #                          Wmat        = NA,
+  #                          BAB         = 0,
+  #                          RecPower    = 1)
+  #   
+  #   #Individual Stanza Parameters
+  #   ind.stanza.group <- model[!is.na(stgroup), Group]
+  #   ieco <- which(!is.na(stgroup))
+  #   stindiv <- data.table(StGroupNum = rep(stgroups[, StGroupNum], 
+  #                                          stgroups[, nstanzas]),
+  #                         StanzaNum  = as.integer(0),
+  #                         GroupNum   = ieco,
+  #                         Group      = ind.stanza.group,
+  #                         First      = NA,
+  #                         Last       = NA,
+  #                         Z          = NA,
+  #                         Leading    = NA)
+  # 
+  #   } else {
+  #     
+  #   Rpath.params$stanzas$NStanzaGroups <- 0
+  #   
+  #   stgroups <- data.table(StGroupNum  = NA,
+  #                          StanzaGroup = NA,
+  #                          nstanzas    = NA,
+  #                          VBGF_Ksp    = NA,
+  #                          VBGF_d      = NA,
+  #                          Wmat        = NA,
+  #                          RecPower    = NA)
+  #   
+  #   stindiv <- data.table(StGroupNum = NA,
+  #                         StanzaNum  = NA,
+  #                         GroupNum   = NA,
+  #                         Group      = NA,
+  #                         First      = NA,
+  #                         Last       = NA,
+  #                         Z          = NA,
+  #                         Leading    = NA)
+  # }
+  # 
+  # Rpath.params$stanzas$stgroups <- stgroups
+  # Rpath.params$stanzas$stindiv  <- stindiv
   
+  
+  
+
+# Handle case when nstanzas is NA
+    if (is.na(nstanzas)) {
+      stgroups <- data.table(StGroupNum  = NA,
+                             StanzaGroup = NA,
+                              nstanzas   = NA,
+                              VBGF_Ksp   = NA,
+                              VBGF_d     = NA,
+                              Wmat       = NA,
+                              RecPower   = NA
+      )
+      
+stindiv <- data.table(StGroupNum = NA,
+                      StanzaNum  = NA,
+                      GroupNum   = NA,
+                      Group      = NA,
+                      First      = NA,
+                      Last       = NA,
+                      Z          = NA,
+                      Leading    = NA)
+} else {
+
+stgroups <- data.table(StGroupNum  = 1:NStanzaGroups,
+                        StanzaGroup = StanzaGroups,
+                        nstanzas    = nstanzas,
+                        VBGF_Ksp    = NA,
+                        VBGF_d      = 0.66667,
+                        Wmat        = NA,
+                        BAB         = 0,
+                        RecPower    = 1)
+
+      
+#Individual Stanza Parameters
+ ind.stanza.group <- model[!is.na(stgroup), Group]
+ ieco <- which(!is.na(stgroup))
+ stindiv <- data.table(StGroupNum = rep(stgroups[, StGroupNum], 
+                                        stgroups[, nstanzas]),
+                       StanzaNum  = as.integer(0),
+                       GroupNum   = ieco,
+                       Group      = ind.stanza.group,
+                       First      = NA,
+                       Last       = NA,
+                       Z          = NA,
+                       Leading    = NA)
+      
     } else {
       
-    Rpath.params$stanzas$NStanzaGroups <- 0
+      Rpath.params$stanzas$NStanzaGroups <- 0
+      
+      stgroups <- data.table(StGroupNum  = NA,
+                             StanzaGroup = NA,
+                             nstanzas    = NA,
+                             VBGF_Ksp    = NA,
+                             VBGF_d      = NA,
+                             Wmat        = NA,
+                             RecPower    = NA)
+      
+      stindiv <- data.table(StGroupNum = NA,
+                            StanzaNum  = NA,
+                            GroupNum   = NA,
+                            Group      = NA,
+                            First      = NA,
+                            Last       = NA,
+                            Z          = NA,
+                            Leading    = NA)
+}
     
-    stgroups <- data.table(StGroupNum  = NA,
-                           StanzaGroup = NA,
-                           nstanzas    = NA,
-                           VBGF_Ksp    = NA,
-                           VBGF_d      = NA,
-                           Wmat        = NA,
-                           RecPower    = NA)
-    
-    stindiv <- data.table(StGroupNum = NA,
-                          StanzaNum  = NA,
-                          GroupNum   = NA,
-                          Group      = NA,
-                          First      = NA,
-                          Last       = NA,
-                          Z          = NA,
-                          Leading    = NA)
-  }
+Rpath.params$stanzas$stgroups <- stgroups
+Rpath.params$stanzas$stindiv <- stindiv
   
-  Rpath.params$stanzas$stgroups <- stgroups
-  Rpath.params$stanzas$stindiv  <- stindiv
+ 
+  
     
   #Pedigree
   pedigree <- data.table(Group   = group,

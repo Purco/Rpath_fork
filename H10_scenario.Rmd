@@ -9,6 +9,8 @@ date: "`r Sys.Date()`"
 
 ```{r, echo = F}
 # Install package
+
+remove.packages("Rpath")
 remotes::install_github('Purco/Rpath_fork')
 ```
 
