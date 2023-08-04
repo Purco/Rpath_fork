@@ -19,8 +19,7 @@
 #'  in the right places).
 #'@import data.table
 #'@export
-create.rpath.params <- function(group, type, stgroup = NA)
-{
+create.rpath.params <- function(group, type, stgroup = NA){
   #Need to define variables to eliminate check() note about no visible binding
   Group <- DetInput <- V1 <- StGroupNum <- NULL
   
@@ -29,13 +28,7 @@ create.rpath.params <- function(group, type, stgroup = NA)
   pred.group  <- group[which(type < 2)]
   prey.group  <- group[which(type < 3)]
   det.group   <- group[which(type == 2)]
- 
-  # fleet.group <- group[which(type == 3)]
-  if (3 %in% type) {fleet.group <- group[which(type == 3)]
-  } else {
-                    fleet.group <- NA
-  }
-  
+  fleet.group <- group[which(type == 3)]
   
   #Model parameters
   model <- data.table(Group       = group, 
@@ -55,37 +48,19 @@ create.rpath.params <- function(group, type, stgroup = NA)
     model[, V1 := as.numeric(NA)]
     setnames(model, "V1", det.group[i])
   }
-
-  # #Add fleets twice - Landings and Discards
-  # for(i in 1:length(fleet.group)){
-  #   model[, V1 := c(rep(0, length(group) - length(fleet.group)), 
-  #                   rep(NA, length(fleet.group)))]
-  #   setnames(model, "V1", fleet.group[i])
-  # }
-  # for(i in 1:length(fleet.group)){
-  #   model[, V1 := c(rep(0, length(group) - length(fleet.group)), 
-  #                   rep(NA, length(fleet.group)))]
-  #   setnames(model, "V1", paste(fleet.group[i], '.disc', sep = ''))
-  # }
-  # Rpath.params$model <- model
-  
-  # Add fleets twice - Landings and Discards
-  if (!is.na(fleet.group)) {
-    for (i in 1:length(fleet.group)) {
-      model[, V1 := c(rep(0, length(group) - length(fleet.group)), 
-                      rep(NA, length(fleet.group)))]
-      setnames(model, "V1", as.character(fleet.group[i]))
-    }
-    for (i in 1:length(fleet.group)) {
-      model[, V1 := c(rep(0, length(group) - length(fleet.group)), 
-                      rep(NA, length(fleet.group)))]
-      setnames(model, "V1", paste(as.character(fleet.group[i]), '.disc', sep = ''))
-    }
+    
+  #Add fleets twice - Landings and Discards
+  for(i in 1:length(fleet.group)){
+    model[, V1 := c(rep(0, length(group) - length(fleet.group)), 
+                    rep(NA, length(fleet.group)))]
+    setnames(model, "V1", fleet.group[i])
   }
-  
+  for(i in 1:length(fleet.group)){
+    model[, V1 := c(rep(0, length(group) - length(fleet.group)), 
+                    rep(NA, length(fleet.group)))]
+    setnames(model, "V1", paste(fleet.group[i], '.disc', sep = ''))
+  }
   Rpath.params$model <- model
-  Rpath.params$stanzas <- list() # add PR
-  
   
   #Diet matrix
   diet <- data.table(Group = c(prey.group, 'Import'))
@@ -103,126 +78,52 @@ create.rpath.params <- function(group, type, stgroup = NA)
     NStanzaGroups <- length(StanzaGroups)
     Rpath.params$stanzas$NStanzaGroups <- NStanzaGroups
     
-  #   stgroups <- data.table(StGroupNum  = 1:NStanzaGroups,
-  #                          StanzaGroup = StanzaGroups,
-  #                          nstanzas    = nstanzas,
-  #                          VBGF_Ksp    = NA,
-  #                          VBGF_d      = 0.66667,
-  #                          Wmat        = NA,
-  #                          BAB         = 0,
-  #                          RecPower    = 1)
-  #   
-  #   #Individual Stanza Parameters
-  #   ind.stanza.group <- model[!is.na(stgroup), Group]
-  #   ieco <- which(!is.na(stgroup))
-  #   stindiv <- data.table(StGroupNum = rep(stgroups[, StGroupNum], 
-  #                                          stgroups[, nstanzas]),
-  #                         StanzaNum  = as.integer(0),
-  #                         GroupNum   = ieco,
-  #                         Group      = ind.stanza.group,
-  #                         First      = NA,
-  #                         Last       = NA,
-  #                         Z          = NA,
-  #                         Leading    = NA)
-  # 
-  #   } else {
-  #     
-  #   Rpath.params$stanzas$NStanzaGroups <- 0
-  #   
-  #   stgroups <- data.table(StGroupNum  = NA,
-  #                          StanzaGroup = NA,
-  #                          nstanzas    = NA,
-  #                          VBGF_Ksp    = NA,
-  #                          VBGF_d      = NA,
-  #                          Wmat        = NA,
-  #                          RecPower    = NA)
-  #   
-  #   stindiv <- data.table(StGroupNum = NA,
-  #                         StanzaNum  = NA,
-  #                         GroupNum   = NA,
-  #                         Group      = NA,
-  #                         First      = NA,
-  #                         Last       = NA,
-  #                         Z          = NA,
-  #                         Leading    = NA)
-  # }
-  # 
-  # Rpath.params$stanzas$stgroups <- stgroups
-  # Rpath.params$stanzas$stindiv  <- stindiv
-  
-  
-  
-
-# Handle case when nstanzas is NA
-if (length(nstanzas) == 0){  stgroups <- data.table(StGroupNum  = NA,
-                                               StanzaGroup = NA,
-                                               nstanzas    = NA,
-                                               VBGF_Ksp    = NA,
-                                               VBGF_d      = NA,
-                                               Wmat        = NA,
-                                               RecPower    = NA)
-      
-                          stindiv <- data.table(StGroupNum = NA,
-                                                StanzaNum  = NA,
-                                                GroupNum   = NA,
-                                                Group      = NA,
-                                                First      = NA,
-                                                Last       = NA,
-                                                Z          = NA,
-                                                Leading    = NA)
-} else {
-stgroups <- data.table(StGroupNum  = 1:NStanzaGroups,
-                        StanzaGroup = StanzaGroups,
-                        nstanzas    = nstanzas,
-                        VBGF_Ksp    = NA,
-                        VBGF_d      = 0.66667,
-                        Wmat        = NA,
-                        BAB         = 0,
-                        RecPower    = 1)
-
-      
-#Individual Stanza Parameters
- ind.stanza.group <- model[!is.na(stgroup), Group]
- ieco <- which(!is.na(stgroup))
- stindiv <- data.table(StGroupNum = rep(stgroups[, StGroupNum], 
-                                        stgroups[, nstanzas]),
-                       StanzaNum  = as.integer(0),
-                       GroupNum   = ieco,
-                       Group      = ind.stanza.group,
-                       First      = NA,
-                       Last       = NA,
-                       Z          = NA,
-                       Leading    = NA)
-      
-} 
-
-# else {
-#       
-#       Rpath.params$stanzas$NStanzaGroups <- 0
-#       
-#       stgroups <- data.table(StGroupNum  = NA,
-#                              StanzaGroup = NA,
-#                              nstanzas    = NA,
-#                              VBGF_Ksp    = NA,
-#                              VBGF_d      = NA,
-#                              Wmat        = NA,
-#                              RecPower    = NA)
-#       
-#       stindiv <- data.table(StGroupNum = NA,
-#                             StanzaNum  = NA,
-#                             GroupNum   = NA,
-#                             Group      = NA,
-#                             First      = NA,
-#                             Last       = NA,
-#                             Z          = NA,
-#                             Leading    = NA)
-# }
+    stgroups <- data.table(StGroupNum  = 1:NStanzaGroups,
+                           StanzaGroup = StanzaGroups,
+                           nstanzas    = nstanzas,
+                           VBGF_Ksp    = NA,
+                           VBGF_d      = 0.66667,
+                           Wmat        = NA,
+                           BAB         = 0,
+                           RecPower    = 1)
     
-Rpath.params$stanzas$stgroups <- stgroups
-Rpath.params$stanzas$stindiv <- stindiv
+    #Individual Stanza Parameters
+    ind.stanza.group <- model[!is.na(stgroup), Group]
+    ieco <- which(!is.na(stgroup))
+    stindiv <- data.table(StGroupNum = rep(stgroups[, StGroupNum], 
+                                           stgroups[, nstanzas]),
+                          StanzaNum  = as.integer(0),
+                          GroupNum   = ieco,
+                          Group      = ind.stanza.group,
+                          First      = NA,
+                          Last       = NA,
+                          Z          = NA,
+                          Leading    = NA)
   
- 
+    } else {
+      
+    Rpath.params$stanzas$NStanzaGroups <- 0
+    
+    stgroups <- data.table(StGroupNum  = NA,
+                           StanzaGroup = NA,
+                           nstanzas    = NA,
+                           VBGF_Ksp    = NA,
+                           VBGF_d      = NA,
+                           Wmat        = NA,
+                           RecPower    = NA)
+    
+    stindiv <- data.table(StGroupNum = NA,
+                          StanzaNum  = NA,
+                          GroupNum   = NA,
+                          Group      = NA,
+                          First      = NA,
+                          Last       = NA,
+                          Z          = NA,
+                          Leading    = NA)
+  }
   
+  Rpath.params$stanzas$stgroups <- stgroups
+  Rpath.params$stanzas$stindiv  <- stindiv
     
   #Pedigree
   pedigree <- data.table(Group   = group,
@@ -231,17 +132,14 @@ Rpath.params$stanzas$stindiv <- stindiv
                          QB      = 1,
                          Diet    = 1)
   #Add fleet pedigree
-  if (!is.na(fleet.group)) { 
-    for(i in 1:length(fleet.group)){
+  for(i in 1:length(fleet.group)){
     pedigree[, V1 := 1]
-    setnames(pedigree, "V1", fleet.group[i])}
-    } else {
-    pedigree[, V1 := NA]  # add PR
-  } 
+    setnames(pedigree, "V1", fleet.group[i])
+  }
   Rpath.params$pedigree <- pedigree
   class(Rpath.params) <- 'Rpath.params'
   return(Rpath.params)
-}}
+}
 
 
 #'Check Rpath parameter files
@@ -277,28 +175,23 @@ check.rpath.params <- function(Rpath.params){
     warning('Model must contain at least 1 detrital group')
     w <- w + 1
   }
- # delete (PR)
-  #  if(nrow(Rpath.params$model[Type == 3, ]) == 0){
-  #   warning('Model must contain at least 1 fleet')
-  #   w <- w + 1
-  # }
+  if(nrow(Rpath.params$model[Type == 3, ]) == 0){
+    warning('Model must contain at least 1 fleet')
+    w <- w + 1
+  }
   
   #Check that there is the proper number of columns
-  
-  
   n.groups <- nrow(Rpath.params$model)
   n.living <- length(Rpath.params$model[Type <= 1, Group])
   n.dead   <- length(Rpath.params$model[Type == 2, Group])
-  
-  # delete (PR)
-  # n.fleet  <- length(Rpath.params$model[Type == 3, Group])
-  # if(ncol(Rpath.params$model) != 10 + n.dead + 2 * n.fleet){
-  #   warning('Model does not have the correct number of column.  There should be 10 
-  #        columns plus one for each detrital group plus two for each fleet group 
-  #        (landings and discards).  Please double check your columns')
-  #   w <- w + 1
-  # }
-  #   
+  n.fleet  <- length(Rpath.params$model[Type == 3, Group])
+  if(ncol(Rpath.params$model) != 10 + n.dead + 2 * n.fleet){
+    warning('Model does not have the correct number of column.  There should be 10 
+         columns plus one for each detrital group plus two for each fleet group 
+         (landings and discards).  Please double check your columns')
+    w <- w + 1
+  }
+    
   #Check that either biomass or EE is entered and not both
   if(length(Rpath.params$model[is.na(Biomass) & is.na(EE) & Type < 2, Group]) > 0){
     warning(paste(Rpath.params$model[is.na(Biomass) & is.na(EE) & Type < 2, Group], 
@@ -420,36 +313,34 @@ check.rpath.params <- function(Rpath.params){
     w <- w + 1
   }
   
+  #Check that landings and discards are numbers for type < 3
+  fleet.matrix <- Rpath.params$model[1:(n.groups - n.fleet), (11 + n.dead):ncol(Rpath.params$model), 
+                            with = F]
+  if(length(which(is.na(fleet.matrix))) > 0){
+    na.group <- which(is.na(fleet.matrix))
+    for(i in 1:length(na.group)) while(na.group[i] > n.groups) na.group[i] <- 
+      na.group[i] - n.groups
+    na.group <- unique(na.group)
+    warning(paste(Rpath.params$model[na.group, Group], 
+               'one or more catches are NA...set to >= 0 \n', sep = ' '))
+    w <- w + 1
+  }
   
-  # delete (PR)
-  # #Check that landings and discards are numbers for type < 3
-  # fleet.matrix <- Rpath.params$model[1:(n.groups - n.fleet), (11 + n.dead):ncol(Rpath.params$model), with = F]
-  # 
-  # if(length(which(is.na(fleet.matrix))) > 0){
-  #   na.group <- which(is.na(fleet.matrix))
-  #   for(i in 1:length(na.group)) while(na.group[i] > n.groups) na.group[i] <- 
-  #     na.group[i] - n.groups
-  #   na.group <- unique(na.group)
-  #   warning(paste(Rpath.params$model[na.group, Group], 
-  #              'one or more catches are NA...set to >= 0 \n', sep = ' '))
-  #   w <- w + 1
-  # }
-  # 
-  # #Check that fleets aren't catching other fleets
-  # fleet.matrix.2 <- Rpath.params$model[(n.groups - n.fleet + 1):n.groups, (11 + n.dead):
-  #                               ncol(Rpath.params$model), with = F]
-  # if(length(which(!is.na(fleet.matrix.2))) > 0){
-  #   not.na.group <- which(!is.na(fleet.matrix.2))
-  #   for(i in 1:length(not.na.group)){
-  #     while(not.na.group[i] > n.fleet){
-  #       not.na.group[i] <- not.na.group[i] - n.fleet
-  #       not.na.group <- unique(not.na.group)
-  #     }
-  #   }
-  #   warning(paste(Rpath.params$model[not.na.group + (n.groups - n.fleet), Group], 
-  #              'are catching another fleet...set to NA \n', sep = ' '))
-  #   w <- w + 1
-  # }
+  #Check that fleets aren't catching other fleets
+  fleet.matrix.2 <- Rpath.params$model[(n.groups - n.fleet + 1):n.groups, (11 + n.dead):
+                                ncol(Rpath.params$model), with = F]
+  if(length(which(!is.na(fleet.matrix.2))) > 0){
+    not.na.group <- which(!is.na(fleet.matrix.2))
+    for(i in 1:length(not.na.group)){
+      while(not.na.group[i] > n.fleet){
+        not.na.group[i] <- not.na.group[i] - n.fleet
+        not.na.group <- unique(not.na.group)
+      }
+    }
+    warning(paste(Rpath.params$model[not.na.group + (n.groups - n.fleet), Group], 
+               'are catching another fleet...set to NA \n', sep = ' '))
+    w <- w + 1
+  }
 
   #Diet
   #Check that columns sum to 1
@@ -506,7 +397,6 @@ if(w == 0){
 #'  parameters for multistanza groups.  If not specified a blank stanza list will 
 #'  be created.
 #'@param pedfile file location of the flat file containg the pedgigree parameters.
-#'
 #'@return Outputs an Rpath.param object that can be used for Rpath and subsequently
 #'  Rsim.  (NOTE: This does function does not ensure data is correct or in the 
 #'  correct locations...run check.rpath.param to ensure the appropriate columns are
