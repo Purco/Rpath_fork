@@ -32,13 +32,12 @@ groups <- c('Common_carp',
             'Macroinvertebrate', 
             'Zooplancton', 
             'Phytoplancton',
-            'Detritus',
-            'Fleet')
+            'Detritus')
 
-types  <- c(rep(0, 8), 1, 2,3)
-# stgroups <- c(rep(0, 11))
+types  <- c(rep(0, 8), 1, 2)
+stgroups <- c(rep(0, 10))
 
-REco.params <- create.rpath.params(group = groups, type = types)
+REco.params <- create.rpath.params(group = groups, type = types,stgroup=stgroups)
 ```
 
 
@@ -79,7 +78,7 @@ biomass <- c(1.44,
              0.25,
              0.54,
              1.92,
-             48.81,NA)
+             48.81)
 
 ## Production by biomass
 
@@ -92,7 +91,7 @@ pb <- c(1.69,
         14.50,
         92.43,
         118.7,
-        NA,NA)
+        NA)
 
 ## Consumption by biomass
 
@@ -104,7 +103,7 @@ qb <- c(4.93,
         5.14,
         48.33,
         308.1,
-        rep(NA,2),NA)
+        rep(NA,2))
 ```
 
 
@@ -117,27 +116,27 @@ REco.params$model[, QB := qb]
 
 
 ```{r}
-#Fisheries
-#Landings
-fleet <- c(rep(NA, 11))
-REco.params$model[, Fleet := fleet]
-
-#Discards
-
-fleet.d <- c(rep(NA, 11))
-REco.params$model[, Fleet.disc := fleet.d]
+# #Fisheries
+# #Landings
+# fleet <- c(rep(NA, 11))
+# REco.params$model[, Fleet := fleet]
+# 
+# #Discards
+# 
+# fleet.d <- c(rep(NA, 11))
+# REco.params$model[, Fleet.disc := fleet.d]
 ```
 
 ```{r Model Table sans stanzas}
 #Biomass accumulation 
-REco.params$model[, BioAcc  := c(2.28,0.83,0.93,0.43,rep(NA, 6),NA)]
+REco.params$model[, BioAcc  := c(2.28,0.83,0.93,0.43,rep(NA, 6))]
 
 # Unassimilated consumption
-REco.params$model[, Unassim := c(rep(0.2, 6), rep(0.4, 2), rep(NA, 2),NA)]
+REco.params$model[, Unassim := c(rep(0.2, 6), rep(0.4, 2), rep(NA, 2))]
 
 #Detrital Fate
-REco.params$model[, Detritus := c(rep(1, 9), rep(0, 1),0)]
-REco.params$model[, Discards := c(rep(0,10),1)]
+REco.params$model[, Detritus := c(rep(1, 9), rep(0, 1))]
+REco.params$model[, Discards := c(rep(0,10))]
 # 
 # #Fisheries
 # #Landings
