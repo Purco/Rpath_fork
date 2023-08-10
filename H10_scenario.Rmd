@@ -32,12 +32,13 @@ groups <- c('Common_carp',
             'Macroinvertebrate', 
             'Zooplancton', 
             'Phytoplancton',
-            'Detritus')
+            'Detritus',
+            'Fleet')
 
-types  <- c(rep(0, 8), 1, 2)
-stgroups <- c(rep(NA, 10))
+types  <- c(rep(0, 8), 1, 2,3)
+# stgroups <- c(rep(0, 11))
 
-REco.params <- create.rpath.params(group = groups, type = types, stgroup = stgroups)
+REco.params <- create.rpath.params(group = groups, type = types)
 ```
 
 
@@ -78,7 +79,7 @@ biomass <- c(1.44,
              0.25,
              0.54,
              1.92,
-             48.81)
+             48.81,NA)
 
 ## Production by biomass
 
@@ -91,7 +92,7 @@ pb <- c(1.69,
         14.50,
         92.43,
         118.7,
-        NA)
+        NA,NA)
 
 ## Consumption by biomass
 
@@ -103,7 +104,7 @@ qb <- c(4.93,
         5.14,
         48.33,
         308.1,
-        rep(NA,2))
+        rep(NA,2),NA)
 ```
 
 
@@ -114,16 +115,29 @@ REco.params$model[, QB := qb]
 ```
 
 
+
+```{r}
+#Fisheries
+#Landings
+fleet <- c(rep(NA, 11))
+REco.params$model[, Fleet := fleet]
+
+#Discards
+
+fleet.d <- c(rep(NA, 11))
+REco.params$model[, Fleet.disc := fleet.d]
+```
+
 ```{r Model Table sans stanzas}
 #Biomass accumulation 
-REco.params$model[, BioAcc  := c(2.28,0.83,0.93,0.43,rep(NA, 6))]
+REco.params$model[, BioAcc  := c(2.28,0.83,0.93,0.43,rep(NA, 6),NA)]
 
 # Unassimilated consumption
-REco.params$model[, Unassim := c(rep(0.2, 6), rep(0.4, 2), rep(NA, 2))]
+REco.params$model[, Unassim := c(rep(0.2, 6), rep(0.4, 2), rep(NA, 2),NA)]
 
 #Detrital Fate
-REco.params$model[, Detritus := c(rep(1, 9), rep(0, 1))]
-REco.params$model[, Discards := c(rep(NA,10))]
+REco.params$model[, Detritus := c(rep(1, 9), rep(0, 1),0)]
+REco.params$model[, Discards := c(rep(0,10),1)]
 # 
 # #Fisheries
 # #Landings
@@ -168,7 +182,7 @@ Here is the completed model parameter file for R Ecosystem:
 
 ```{r diet fill}
 
-REco.params$diet[, Common_carp       := c(NA,NA,NA,NA, 0.01, 0.01, 0.18, 0.22,0.12,046,NA)]
+REco.params$diet[, Common_carp       := c(NA,NA,NA,NA, 0.01, 0.01, 0.18, 0.22,0.12,0.46,NA)]
                  
 REco.params$diet[, Pike_perch        := c(NA,NA,NA,NA, 0.28, 0.02, 0.12, 0.56,NA,0.02,NA)]
  
@@ -245,7 +259,7 @@ names, and even highlight a particular group.
 ```{r Food Web Plots, fig.align = 'center', fig.height = 7, fig.width = 7}
 webplot(REco)
 webplot(REco, labels = T)
-webplot(REco, fleets = T, highlight = 'AduRoundfish1')
+# webplot(REco, fleets = T, highlight = 'AduRoundfish1')
 ```
 
 
