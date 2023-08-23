@@ -160,10 +160,17 @@ rpath <- function(Rpath.params, eco.name = NA, eco.area = 1){
   living[, M0 := PB * (1 - EE)]
   living[, QBloss := QB]
   living[is.na(QBloss), QBloss := 0]
+  
+  # delete (PR) geardisc
+  # loss <- c((living[, M0] * living[, Biomass]) + 
+  #             (living[, Biomass] * living[, QBloss] * living[, Unassim]),
+  #           model[Type ==2, DetInput], 
+  #           geardisc)
   loss <- c((living[, M0] * living[, Biomass]) + 
               (living[, Biomass] * living[, QBloss] * living[, Unassim]),
-            model[Type ==2, DetInput], 
-            geardisc)
+            model[Type ==2, DetInput])
+  
+  
   detinputs  <- colSums(loss * detfate)
   detdiet    <- diet[(nliving + 1):(nliving + ndead), ]
   BQB        <- living[, Biomass * QB]
