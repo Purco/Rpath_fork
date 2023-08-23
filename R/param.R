@@ -279,10 +279,10 @@ check.rpath.params <- function(Rpath.params){
     w <- w + 1
   }
  # delete (PR)
-  #  if(nrow(Rpath.params$model[Type == 3, ]) == 0){
-  #   warning('Model must contain at least 1 fleet')
-  #   w <- w + 1
-  # }
+   #  if(nrow(Rpath.params$model[Type == 3, ]) == 0){
+   #   warning('Model must contain at least 1 fleet')
+   #   w <- w + 1
+   # }
   
   #Check that there is the proper number of columns
   
@@ -291,7 +291,7 @@ check.rpath.params <- function(Rpath.params){
   n.living <- length(Rpath.params$model[Type <= 1, Group])
   n.dead   <- length(Rpath.params$model[Type == 2, Group])
   
-  # delete (PR)
+# Delete (PR)
   # n.fleet  <- length(Rpath.params$model[Type == 3, Group])
   # if(ncol(Rpath.params$model) != 10 + n.dead + 2 * n.fleet){
   #   warning('Model does not have the correct number of column.  There should be 10 
@@ -313,18 +313,20 @@ check.rpath.params <- function(Rpath.params){
     w <- w + 1
   }
 
+ # Delete (PR)
   #Check that Biomass / PB / QB / EE / ProdCons is not entered for types 3
-  if(length(Rpath.params$model[Type == 3 & !is.na(Biomass), Group]) > 0){
-    warning(paste(Rpath.params$model[Type == 3 & !is.na(Biomass), Group], 
-               'is a fleet and should not have a biomass...set to NA \n', 
-               sep = ' '))
-    w <- w + 1
-  }
-  if(length(Rpath.params$model[Type == 3 & !is.na(PB), Group]) > 0){
-    warning(paste(Rpath.params$model[Type == 3 & !is.na(PB), Group], 
-               'is a fleet and should not have a PB...set to NA \n', sep = ' '))
-    w <- w + 1
-  }
+  # if(length(Rpath.params$model[Type == 3 & !is.na(Biomass), Group]) > 0){
+  #   warning(paste(Rpath.params$model[Type == 3 & !is.na(Biomass), Group],
+  #              'is a fleet and should not have a biomass...set to NA \n',
+  #              sep = ' '))
+  #   w <- w + 1
+  # }
+  # if(length(Rpath.params$model[Type == 3 & !is.na(PB), Group]) > 0){
+  #   warning(paste(Rpath.params$model[Type == 3 & !is.na(PB), Group],
+  #              'is a fleet and should not have a PB...set to NA \n', sep = ' '))
+  #   w <- w + 1
+  # }
+  
   if(length(Rpath.params$model[Type > 1 & !is.na(QB), Group]) > 0){
     warning(paste(Rpath.params$model[Type > 1 & !is.na(QB), Group], 
                'are not living and should not have a QB...set to NA \n', sep = ' '))
@@ -367,17 +369,18 @@ check.rpath.params <- function(Rpath.params){
       w <- w + 1  
     }
   }
-  
+
+# Delete (PR)  
   #Check that BioAcc / Unassim is NA for fleets and numeric for types < 3
-  if(length(Rpath.params$model[Type == 3 & !is.na(BioAcc), Group]) > 0){
-    warning(paste(Rpath.params$model[Type == 3 & !is.na(BioAcc), Group],
-               'are fleets and should not have a BioAcc...set to NA \n', sep = ' '))
-    w <- w + 1
-  }
-  if(length(Rpath.params$model[Type == 3 & !is.na(Unassim), Group]) > 0){
-    warning(paste(Rpath.params$model[Type == 3 & !is.na(Unassim), Group],
-               'are fleets and should not have an Unassim...set to NA \n', sep = ' '))
-    w <- w + 1
+  # if(length(Rpath.params$model[Type == 3 & !is.na(BioAcc), Group]) > 0){
+  #   warning(paste(Rpath.params$model[Type == 3 & !is.na(BioAcc), Group],
+  #              'are fleets and should not have a BioAcc...set to NA \n', sep = ' '))
+  #   w <- w + 1
+  # }
+  # if(length(Rpath.params$model[Type == 3 & !is.na(Unassim), Group]) > 0){
+  #   warning(paste(Rpath.params$model[Type == 3 & !is.na(Unassim), Group],
+  #              'are fleets and should not have an Unassim...set to NA \n', sep = ' '))
+  #   w <- w + 1
   }
   if(length(Rpath.params$model[Type != 3 & is.na(BioAcc), Group]) > 0){
     warning(paste(Rpath.params$model[Type != 3 & is.na(BioAcc), Group],
@@ -396,6 +399,7 @@ check.rpath.params <- function(Rpath.params){
                'are not detritus...set DetInput to NA \n', sep = ' '))
     w <- w + 1
   }
+
   if(length(Rpath.params$model[Type == 2 & is.na(DetInput), Group]) >0){
     warning(paste(Rpath.params$model[Type == 2 & is.na(DetInput), Group],
                'are detritus...set DetInput to 0 \n', sep = ' '))
@@ -491,7 +495,7 @@ if(w == 0){
 } else {
     cat('Rpath parameter file needs attention!\n')
   }  
-}
+# }
 
 #'Read Rpath parameters from .csv files
 #'
