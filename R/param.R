@@ -299,7 +299,8 @@ check.rpath.params <- function(Rpath.params){
   #        (landings and discards).  Please double check your columns')
   #   w <- w + 1
   # }
-  #   
+  #  
+  
   #Check that either biomass or EE is entered and not both
   if(length(Rpath.params$model[is.na(Biomass) & is.na(EE) & Type < 2, Group]) > 0){
     warning(paste(Rpath.params$model[is.na(Biomass) & is.na(EE) & Type < 2, Group], 
@@ -381,7 +382,7 @@ check.rpath.params <- function(Rpath.params){
   #   warning(paste(Rpath.params$model[Type == 3 & !is.na(Unassim), Group],
   #              'are fleets and should not have an Unassim...set to NA \n', sep = ' '))
   #   w <- w + 1
-  }
+  # }
   if(length(Rpath.params$model[Type != 3 & is.na(BioAcc), Group]) > 0){
     warning(paste(Rpath.params$model[Type != 3 & is.na(BioAcc), Group],
                'must have a number for BioAcc...set to >= 0 \n', sep = ' '))
@@ -495,7 +496,7 @@ if(w == 0){
 } else {
     cat('Rpath parameter file needs attention!\n')
   }  
-# }
+}
 
 #'Read Rpath parameters from .csv files
 #'
