@@ -116,7 +116,11 @@ rpath <- function(Rpath.params, eco.name = NA, eco.area = 1){
   living  <- model[alive == 1, ]
   
   #Set up right hand side b
-  living[, Ex := totcatch + BioAcc]
+  
+ # Delete totcath 
+  # living[, Ex := totcatch + BioAcc]
+  living[, Ex := BioAcc]
+  
   living[, BioQB := Biomass * QB]
   cons  <- as.matrix(nodetrdiet) * living$BioQB[col(as.matrix(nodetrdiet))]
   living[, b := Ex + rowSums(cons, na.rm = T)] 
