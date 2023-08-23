@@ -218,12 +218,13 @@ rpath <- function(Rpath.params, eco.name = NA, eco.area = 1){
   }
   dietplus <- dietplus[1:(nliving + ndead), ]
  
-# Delete (PR) ngear and gearcons
+# Delete (PR) ngear
   # dietplus <- rbind(dietplus, matrix(0, ngear, nliving))
+  
+# Delete (PR) gearcons
   # dietplus <- cbind(dietplus, matrix(0, ngroups, ndead), gearcons)
-
-  dietplus <- rbind(dietplus, matrix(0, nliving))
   dietplus <- cbind(dietplus, matrix(0, ngroups, ndead))
+  
   TLcoeffA <- TLcoeff - dietplus
   TL       <- solve(t(TLcoeffA), b)     
 
