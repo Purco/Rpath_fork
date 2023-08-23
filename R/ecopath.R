@@ -57,7 +57,9 @@ rpath <- function(Rpath.params, eco.name = NA, eco.area = 1){
   ngroups <- nrow(model)
   nliving <- nrow(model[Type <  2, ])
   ndead   <- nrow(model[Type == 2, ])
-  ngear   <- nrow(model[Type == 3, ])
+
+ # Delete (PR)
+  # ngear   <- nrow(model[Type == 3, ])
 
   nodetrdiet <- diet[1:nliving, ]
   model[is.na(DetInput), DetInput := 0]
@@ -69,31 +71,33 @@ rpath <- function(Rpath.params, eco.name = NA, eco.area = 1){
   model[, QB := QB.1]
   model[, PB := PB.1]
   
+# Delete (PR)
   # define landings, discards, necessary sums
-  landmat     <- model[, (10 + ndead + 1):(10 + ndead + ngear), with = F]
-  discardmat  <- model[, (10 + ndead + 1 + ngear):(10 + ndead + (2 * ngear)), with = F]
-  totcatchmat <- landmat + discardmat
-    
+  # landmat     <- model[, (10 + ndead + 1):(10 + ndead + ngear), with = F]
+  # discardmat  <- model[, (10 + ndead + 1 + ngear):(10 + ndead + (2 * ngear)), with = F]
+  # totcatchmat <- landmat + discardmat
+
+# Delete (PR)    
   # KYA 1/16/14 Need if statement here because rowSums fail if only one 
   # fishery (catch is vector instead of matrix)     ##FIX PROPAGATION HERE
-  if (is.data.frame(totcatchmat)){
-    totcatch <- rowSums(totcatchmat)
-    landings <- rowSums(landmat)    
-    discards <- rowSums(discardmat)  
-    gearland <- colSums(landmat,   na.rm = T)
-    geardisc <- colSums(discardmat, na.rm = T)
-  }else{
-    totcatch <- totcatchmat
-    landings <- landmat    
-    discards <- discardmat 
-    gearland <- sum(landmat,    na.rm = T)
-    geardisc <- sum(discardmat, na.rm = T)                     
-  }   
-  
-  geartot <- gearland + geardisc
-  model[, landings := landings]
-  model[, discards := discards]
-  model[, totcatch := totcatch]
+  # if (is.data.frame(totcatchmat)){
+  #   totcatch <- rowSums(totcatchmat)
+  #   landings <- rowSums(landmat)    
+  #   discards <- rowSums(discardmat)  
+  #   gearland <- colSums(landmat,   na.rm = T)
+  #   geardisc <- colSums(discardmat, na.rm = T)
+  # }else{
+  #   totcatch <- totcatchmat
+  #   landings <- landmat    
+  #   discards <- discardmat 
+  #   gearland <- sum(landmat,    na.rm = T)
+  #   geardisc <- sum(discardmat, na.rm = T)                     
+  # }   
+  # 
+  # geartot <- gearland + geardisc
+  # model[, landings := landings]
+  # model[, discards := discards]
+  # model[, totcatch := totcatch]
 
   # flag missing pars and subset for estimation
   model[, noB   := 0]
@@ -179,9 +183,12 @@ rpath <- function(Rpath.params, eco.name = NA, eco.area = 1){
   b             <- rep(1, ngroups)
   TLcoeff       <- matrix(0, ngroups, ngroups)
   diag(TLcoeff) <- rep(1, ngroups)
-  gearcons      <- as.matrix(totcatchmat) / geartot[col(as.matrix(totcatchmat))]
-  dimnames(gearcons) <- list(NULL, NULL)
-  gearcons[is.na(gearcons)] <- 0
+
+# Delete (PR)
+  # gearcons      <- as.matrix(totcatchmat) / geartot[col(as.matrix(totcatchmat))]
+  # dimnames(gearcons) <- list(NULL, NULL)
+  # gearcons[is.na(gearcons)] <- 0
+  
   dietplus <- as.matrix(diet)
   dimnames(dietplus) <- list(NULL, NULL)
 
@@ -199,48 +206,78 @@ rpath <- function(Rpath.params, eco.name = NA, eco.area = 1){
     dietplus[, import[i]] <- dietplus[, import[i]] / import.denom
   }
   dietplus <- dietplus[1:(nliving + ndead), ]
-  dietplus <- rbind(dietplus, matrix(0, ngear, nliving))
-  dietplus <- cbind(dietplus, matrix(0, ngroups, ndead), gearcons)
+ 
+# Delete (PR) ngear and gearcons
+  # dietplus <- rbind(dietplus, matrix(0, ngear, nliving))
+  # dietplus <- cbind(dietplus, matrix(0, ngroups, ndead), gearcons)
+
+  dietplus <- rbind(dietplus, matrix(0, nliving))
+  dietplus <- cbind(dietplus, matrix(0, ngroups, ndead))
   TLcoeffA <- TLcoeff - dietplus
   TL       <- solve(t(TLcoeffA), b)     
 
   #kya changed these following four lines for detritus, and removing NAs
   #to match header file format (replacing NAs with 0.0s)
-  Bplus  <- c(living[, Biomass], DetB, rep(0.0, ngear))
+
+# Delete (PR)  rep(0.0, ngear)
+  # Bplus  <- c(living[, Biomass], DetB, rep(0.0, ngear))
+  Bplus  <- c(living[, Biomass], DetB)
   
   PBplus <- model[, PB] 
   PBplus[(nliving + 1):(nliving + ndead)] <- DetPB
   PBplus[is.na(PBplus)] <- 0.0
   
-  EEplus <- c(EE, rep(0.0, ngear))
-  
+# Delete (PR)  rep(0.0, ngear) 
+  # EEplus <- c(EE, rep(0.0, ngear))
+  EEplus <- c(EE)
+    
   QBplus <- model[, QB]
   QBplus[is.na(QBplus)] <- 0.0
   
   GE[is.na(GE)] <- 0.0
-  
-  RemPlus <- model[, totcatch]
-  RemPlus[is.na(RemPlus)] <- 0.0
-  
+
+# Delete (PR)   
+  # RemPlus <- model[, totcatch]
+  # RemPlus[is.na(RemPlus)] <- 0.0
+ 
+# Delete (PR)  Removals = RemPlus 
+  # balanced <- list(Group    = model[, Group], 
+  #                  TL       = TL, 
+  #                  Biomass  = Bplus, 
+  #                  PB       = PBplus, 
+  #                  QB       = QBplus, 
+  #                  EE       = EEplus, 
+  #                  GE       = GE, 
+  #                  Removals = RemPlus)
+
   balanced <- list(Group    = model[, Group], 
                    TL       = TL, 
                    Biomass  = Bplus, 
                    PB       = PBplus, 
                    QB       = QBplus, 
                    EE       = EEplus, 
-                   GE       = GE, 
-                   Removals = RemPlus)
+                   GE       = GE)
 
   M0plus  <- c(living[, M0], as.vector(detoutputs / detinputs))
-  gearF   <- as.matrix(totcatchmat) / living[, Biomass][row(as.matrix(totcatchmat))]
+  
+# Delete (PR)
+  # gearF   <- as.matrix(totcatchmat) / living[, Biomass][row(as.matrix(totcatchmat))]
   #newcons <- as.matrix(nodetrdiet)  * living[, BQB][col(as.matrix(nodetrdiet))]
+  
   newcons <- as.matrix(nodetrdiet)  * BQB[col(as.matrix(nodetrdiet))]
   predM   <- as.matrix(newcons) / living[, Biomass][row(as.matrix(newcons))]
   predM   <- rbind(predM, detcons)
+  
+# Delete (PR) F
+  # morts   <- list(Group = model[Type < 3, Group], 
+  #                 PB    = model[Type < 3, PB], 
+  #                 M0    = M0plus, 
+  #                 F     = gearF[1:(nliving + ndead), ], 
+  #                 M2    = predM)
+  
   morts   <- list(Group = model[Type < 3, Group], 
                   PB    = model[Type < 3, PB], 
                   M0    = M0plus, 
-                  F     = gearF[1:(nliving + ndead), ], 
                   M2    = predM)
   
   # convert from levels to characters
@@ -257,12 +294,15 @@ rpath <- function(Rpath.params, eco.name = NA, eco.area = 1){
   dietm                               <- as.matrix(diet)
   dimnames(dietm)                     <- list(c(gnames[1:(nliving+ndead)],"Import"), gnames[1:nliving])
   dietm[is.na(dietm)]                 <- 0
-  landmatm                            <- as.matrix(landmat)
-  dimnames(landmatm)                  <- list(gnames, gnames[(ngroups-ngear+1):ngroups])
-  landmatm[is.na(landmatm)]           <- 0
-  discardmatm                         <- as.matrix(discardmat)
-  dimnames(discardmatm)               <- list(gnames, gnames[(ngroups-ngear+1):ngroups])
-  discardmatm[is.na(discardmatm)]     <- 0
+  
+# Delete (PR)
+  # landmatm                            <- as.matrix(landmat)
+  # dimnames(landmatm)                  <- list(gnames, gnames[(ngroups-ngear+1):ngroups])
+  # landmatm[is.na(landmatm)]           <- 0
+  # discardmatm                         <- as.matrix(discardmat)
+  # dimnames(discardmatm)               <- list(gnames, gnames[(ngroups-ngear+1):ngroups])
+  # discardmatm[is.na(discardmatm)]     <- 0
+  
   detfatem                            <- as.matrix(detfate)
   dimnames(detfatem)                  <- list(gnames, gnames[(nliving+1):(nliving+ndead)])
   detfatem[is.na(detfatem)]           <- 0
@@ -278,12 +318,31 @@ rpath <- function(Rpath.params, eco.name = NA, eco.area = 1){
     out.BA      <- model[, BioAcc];  names(out.BA) <- gnames
     out.Unassim <- model[, Unassim]; names(out.Unassim) <- gnames
     out.GE      <- balanced$GE;      names(out.GE) <- gnames    
-    
+
+# Delete (PR)   
+  # list structure for sim inputs
+  # path.model <- list(NUM_GROUPS = ngroups,
+  #                    NUM_LIVING = nliving,
+  #                    NUM_DEAD   = ndead,
+  #                    NUM_GEARS  = ngear,
+  #                    Group      = out.Group,
+  #                    type       = out.type,
+  #                    TL         = out.TL,
+  #                    Biomass    = out.Biomass,
+  #                    PB         = out.PB,
+  #                    QB         = out.QB,
+  #                    EE         = out.EE,
+  #                    BA         = out.BA,
+  #                    Unassim    = out.Unassim,
+  #                    GE         = out.GE,
+  #                    DC         = dietm,
+  #                    DetFate    = detfatem,
+  #                    Landings   = landmatm,
+  #                    Discards   = discardmatm) 
   # list structure for sim inputs
   path.model <- list(NUM_GROUPS = ngroups,
                      NUM_LIVING = nliving,
                      NUM_DEAD   = ndead,
-                     NUM_GEARS  = ngear,
                      Group      = out.Group,
                      type       = out.type,
                      TL         = out.TL,
@@ -295,9 +354,7 @@ rpath <- function(Rpath.params, eco.name = NA, eco.area = 1){
                      Unassim    = out.Unassim,
                      GE         = out.GE,
                      DC         = dietm,
-                     DetFate    = detfatem,
-                     Landings   = landmatm,
-                     Discards   = discardmatm)      
+                     DetFate    = detfatem) 
 
 #Define class of output
 class(path.model) <- 'Rpath'

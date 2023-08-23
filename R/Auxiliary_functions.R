@@ -19,10 +19,16 @@ MTI <- function(Rpath, Rpath.params, increase = T){
   
   #MTI is a matrix where MTIij = DCij - FCji
   #Get number of fleets and detrital groups
-  nfleets       <- length(which(x$model$Type == 3))
+ 
+  # Delete (PR) 
+  # nfleets       <- length(which(x$model$Type == 3))
+  
   ndetritus     <- length(which(x$model$Type == 2))
   ngroups       <- length(x$model$Group)
-  fleetnames    <- x$model$Group[which(x$model$Type == 3)]
+ 
+  # Delete (PR)
+  # fleetnames    <- x$model$Group[which(x$model$Type == 3)]
+  
   detritusnames <- x$model$Group[which(x$model$Type == 2)]
   livingnames   <- x$model$Group[which(x$model$Type < 2)]
   allnames      <- x$model$Group
@@ -41,30 +47,34 @@ MTI <- function(Rpath, Rpath.params, increase = T){
     }
   }
   
+  # Delete (PR)
   #Add fleet "prey" rows
-  fleetrows <- as.data.table(matrix(rep(0, nfleets * ncol(DC)), nfleets, 
-                                    ncol(DC)))
-  fleetrows[, V1 := fleetnames]
-  DC <- rbindlist(list(DC, fleetrows), use.names = F)
+  # # fleetrows <- as.data.table(matrix(rep(0, nfleets * ncol(DC)), nfleets, 
+  #                                   ncol(DC)))
+  # fleetrows[, V1 := fleetnames]
+  # DC <- rbindlist(list(DC, fleetrows), use.names = F)
   
+ 
   #Add detritus and fleet "pred" columns
   detcols <- as.data.table(matrix(rep(0, ndetritus * ngroups), ngroups, ndetritus))
   setnames(detcols, paste0('V', seq_along(detritusnames)), detritusnames)
   DC <- cbind(DC, detcols)
-  
+
+ 
+  # Delete (PR)
   #Calculate proportion of catch for fishing "DC"
-  totcatch <- y$Landings + y$Discards
-  totcatch.sum <- colSums(totcatch)
-  for(ifleet in 1:ncol(totcatch)){
-    fleet.prop <- as.data.table(totcatch[, ifleet] / totcatch.sum[ifleet])
-    setnames(fleet.prop, 'V1', fleetnames[ifleet])
-    if(ifleet == 1){
-      fleetcols <- fleet.prop
-    }else{
-      fleetcols <- cbind(fleetcols, fleet.prop)
-    }
-  }
-  DC <- cbind(DC, fleetcols)
+  # totcatch <- y$Landings + y$Discards
+  # totcatch.sum <- colSums(totcatch)
+  # for(ifleet in 1:ncol(totcatch)){
+  #   fleet.prop <- as.data.table(totcatch[, ifleet] / totcatch.sum[ifleet])
+  #   setnames(fleet.prop, 'V1', fleetnames[ifleet])
+  #   if(ifleet == 1){
+  #     fleetcols <- fleet.prop
+  #   }else{
+  #     fleetcols <- cbind(fleetcols, fleet.prop)
+  #   }
+  # }
+  # DC <- cbind(DC, fleetcols)
   
   #Ensure column order is correct
   DCi.order <- c('Group', DC$Group)
@@ -82,9 +92,11 @@ MTI <- function(Rpath, Rpath.params, increase = T){
   BQB  <- bio * y$QB
   Tij <- DC * BQB[col(as.matrix(DC))]
   
-  #Add fishery removals
-  Tij <- Tij[, which(!names(Tij) %in% fleetnames), with = F]
-  Tij <- cbind(Tij, totcatch)
+  # Delete (PR)
+  # #Add fishery removals
+  # Tij <- Tij[, which(!names(Tij) %in% fleetnames), with = F]
+  # Tij <- cbind(Tij, totcatch)
+  
   # fleetnames are already in the colnames, removed: setnames(Tij, paste0('V', seq_along(fleetnames)), fleetnames)
   
   #Calculate net production
