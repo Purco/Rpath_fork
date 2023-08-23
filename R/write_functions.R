@@ -18,9 +18,22 @@ write.Rpath <- function(x, file = NA, morts = F){
   ext <- 'list'
   if(grepl('.csv', file) == T) ext <- 'csv'
   if(grepl('.RData', file, ignore.case = T) == T) ext <- 'RData'
+
+# delete (PR) removals 
+  # if(morts == F){
+  #   removals <- rowSums(x$Landings) + rowSums(x$Discard)
+  #   out <- data.frame(Group    = x$Group,
+  #                     type     = x$type,
+  #                     TL       = x$TL,
+  #                     Biomass  = x$Biomass,
+  #                     PB       = x$PB,
+  #                     QB       = x$QB,
+  #                     EE       = x$EE,
+  #                     GE       = x$GE,
+  #                     Removals = removals)
+  # }
   
   if(morts == F){
-    removals <- rowSums(x$Landings) + rowSums(x$Discard)
     out <- data.frame(Group    = x$Group,
                       type     = x$type,
                       TL       = x$TL,
@@ -28,9 +41,9 @@ write.Rpath <- function(x, file = NA, morts = F){
                       PB       = x$PB,
                       QB       = x$QB,
                       EE       = x$EE,
-                      GE       = x$GE,
-                      Removals = removals)
+                      GE       = x$GE)
   }
+  
   if(morts == T){
     ngroup <- x$NUM_LIVING + x$NUM_DEAD
     out <- data.frame(Group    = x$Group[1:ngroup],
@@ -40,12 +53,18 @@ write.Rpath <- function(x, file = NA, morts = F){
     M0  <- c(x$PB[1:x$NUM_LIVING] * (1 - x$EE[1:x$NUM_LIVING]), 
              x$EE[(x$NUM_LIVING + 1):ngroup])
     out <- cbind(out, M0)
+    
     #Calculate F mortality
-    totcatch <- x$Landings + x$Discards
-    Fmort    <- as.data.frame(totcatch / x$Biomass[row(as.matrix(totcatch))])
+# Delete (PR)
+    # totcatch <- x$Landings + x$Discards
+    # Fmort    <- as.data.frame(totcatch / x$Biomass[row(as.matrix(totcatch))])
+    
     #setnames(Fmort, paste('V',  1:x$NUM_GEARS,                     sep = ''), 
     #         paste('F.', x$Group[(ngroup +1):x$NUM_GROUPS], sep = ''))
-    out  <- cbind(out, Fmort[1:ngroup, ])
+
+# Delete (PR)    
+    # out  <- cbind(out, Fmort[1:ngroup, ])
+    
     #Calculate M2
     bio  <- x$Biomass[1:x$NUM_LIVING]
     BQB  <- bio * x$QB[1:x$NUM_LIVING]
