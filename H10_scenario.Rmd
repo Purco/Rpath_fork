@@ -136,7 +136,7 @@ REco.params$model[, Unassim := c(rep(0.2, 6), rep(0.4, 2), rep(NA, 2))]
 
 #Detrital Fate
 REco.params$model[, Detritus := c(rep(1, 9), rep(0, 1))]
-REco.params$model[, Discards := c(rep(0,10))]
+# REco.params$model[, Discards := c(rep(0,10))]
 # 
 # #Fisheries
 # #Landings
