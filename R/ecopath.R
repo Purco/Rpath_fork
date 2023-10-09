@@ -45,10 +45,18 @@ rpath <- function(Rpath.params, eco.name = NA, eco.area = 1){
   #Adjust diet comp of mixotrophs
   mixotrophs <- which(model[, Type] > 0 & model[, Type] < 1)
   mix.Q <- 1 - model[mixotrophs, Type]
+  
+  #  for(i in seq_along(mixotrophs)){
+  #   new.dc <- diet[, mixotrophs[i], with = F] * mix.Q[i]
+  #   diet[, mixotrophs[i] := new.dc]
+  # }
+  # 
+  new.dc <- diet[, mixotrophs, with = F] # add PR
   for(i in seq_along(mixotrophs)){
-    new.dc <- diet[, mixotrophs[i], with = F] * mix.Q[i]
-    diet[, mixotrophs[i] := new.dc]
-  }
+    new.dc[[i]] <- diet[[mixotrophs[i]]] * mix.Q[i]
+    diet[, (mixotrophs[i]) := new.dc[[mixotrophs[i]]]]
+  } 
+  
   
   #Convert NAs to zero in diet matrix
   diet[is.na(diet)] <- 0
@@ -171,7 +179,8 @@ rpath <- function(Rpath.params, eco.name = NA, eco.area = 1){
             model[Type ==2, DetInput])
   
   
-  detinputs  <- colSums(loss * detfate)
+  # detinputs  <- colSums(loss * detfate)
+  detinputs  <- colSums(loss * detfate,na.rm = T) # Add PR
   detdiet    <- diet[(nliving + 1):(nliving + ndead), ]
   BQB        <- living[, Biomass * QB]
   detcons    <- as.matrix(detdiet) * BQB[col(as.matrix(detdiet))]

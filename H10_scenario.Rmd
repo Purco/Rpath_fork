@@ -191,17 +191,25 @@ REco.params$diet[, Tench             := c(NA,NA,NA,NA,NA,NA, 0.22, 0.12,0.10,0.5
 
 REco.params$diet[, Roach_juv         := c(NA,NA,NA,NA,NA,NA, 0.01, 0.20,0.39,0.40,NA)]
 
-REco.params$diet[, Macroinvertebrate := c(NA,NA,NA,NA,NA,NA, 0.01, 0.15,0.24,0.60,NA)]
+REco.params$diet[, Tench_juv         := c(NA,NA,NA,NA,NA,NA, 0.01, 0.15,0.24,0.60,NA)]
 
-REco.params$diet[, Zooplancton       := c(NA,NA,NA,NA,NA,NA, 0.08, 0.16,0.35,0.41,NA)]
+REco.params$diet[, Macroinvertebrate := c(NA,NA,NA,NA,NA,NA, 0.08, 0.16,0.35,0.41,NA)]
 
-REco.params$diet[, Phytoplancton     := c(NA,NA,NA,NA,NA,NA, NA, 0.11,0.27,0.62,NA)]
+REco.params$diet[, Zooplancton     := c(NA,NA,NA,NA,NA,NA, NA, 0.11,0.27,0.62,NA)]
 
 
 ```
 ```{r Dietfile Table, echo = F}
 knitr::kable(REco.params$diet, caption = 'Diet parameters for R Ecosystem')
 ```
+
+```{r}
+colSums(REco.params$diet[,2:length(REco.params$diet)],na.rm = T)
+
+
+```
+
+
 
 ###Pedigree parameters
 Rpath does not currently use pedigrees however, future Rpath extensions will use
