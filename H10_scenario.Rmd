@@ -10,7 +10,8 @@ date: "`r Sys.Date()`"
 ```{r, echo = F}
 # Install package
 
-remove.packages("Rpath")
+
+# remove.packages("Rpath")
 remotes::install_github('Purco/Rpath_fork')
 ```
 
@@ -18,6 +19,209 @@ remotes::install_github('Purco/Rpath_fork')
 # Run package
 library(Rpath); library(data.table)
 ```
+
+
+```{r}
+# Run package for combination
+library(gtools) 
+# Generate all possible combinations of 4 values that sum to 100
+combinations <- permutations(n = 100, r = 4, v = 1:100)
+
+# Filter valid combinations (sum to 100)
+valid_combinations <- subset(combinations, rowSums(combinations) == 100)
+
+valid_combinations <-as.data.frame(valid_combinations)
+
+valid_combinations$scenario<-paste("scenario",rownames(valid_combinations),sep="")
+
+library(tidyverse)
+
+valid_combinations=valid_combinations %>%pivot_longer(cols=c(1:4),names_to = "sp_scn", values_to = "prc_scn")
+
+data.valid_combinations=as.data.frame(valid_combinations)
+
+list_combinations=list()
+scenarios<-unique(data.valid_combinations$scenario)
+
+for (i in 1:length(scenarios)) {
+ list_combinations[[i]]=subset(data.valid_combinations,scenario==scenarios[i])
+}
+
+
+list_comb=list_combinations
+```
+
+
+# Add data
+
+
+```{r,echo=FALSE,warning = FALSE,message = FALSE}
+# define list of packages in vector
+package<-c("readxl")
+
+# define function to load all packages
+instal<-function(x){ 
+  for(pkg in x){
+  instal=require(pkg, character.only = T) # load package x 
+}}
+instal(package) # load list of packages in vector package
+
+```
+
+```{r,include=FALSE,warning = FALSE,message = FALSE}
+# set working directory
+# setwd("C:/Users/prralien/Nextcloud/RENK/A_Purco/Thèse_Purco/Ecopath_R/Rpath_fork")
+
+# Import data
+# data_ini<-read_excel("Stocking_Hypothesis.xlsx",sheet = 1)
+```
+
+
+```{r,include=FALSE,warning = FALSE,message = FALSE}
+data_ini.ad<-read_excel("Stocking_Hypothesis_ad.xlsx",sheet = 1)
+data_ini.juv<-read_excel("Stocking_Hypothesis_juv.xlsx",sheet = 1)
+```
+
+
+```{r}
+list_comb.d=list()
+for (i in 1:length(scenarios)) {
+ list_comb.d[[i]]=cbind(data_ini.ad,list_comb[[i]])
+}
+
+for (i in 1:length(scenarios)) {
+ list_comb.d[[i]]=rbind(list_comb.d[[i]],data_ini.juv)
+}
+```
+
+# Calcul
+```{r}
+for (i in 1:length(scenarios)) {
+ list_comb.d[[i]]=rbind(list_comb.d[[i]],data_ini.juv)
+}
+```
+
+
+
+```{r}
+for (i in 1:nrow(valid_combinations)) {
+ list_combinations[[i]]=subset(valid_combinations,scenario==scenarios[i])
+}
+```
+
+
+```{r}
+for (i in 1:length(scenarios)) {
+     
+list_comb[[1]]=t(list_comb[[1]][c(1:4)])
+      
+ dd[[i]]$rS_d=0
+       
+       dd[[i]]$rvol.sum.c=0
+       dd[[i]]$rH_d=0
+       
+       dd[[i]]$rdvol.sum=0
+       dd[[i]]$rA_d=0
+}
+
+```
+
+
+
+
+```{r}
+for (i in 1:length(dd)) {
+       dd[[i]]$rvol.sum=0
+       dd[[i]]$rS_d=0
+       
+       dd[[i]]$rvol.sum.c=0
+       dd[[i]]$rH_d=0
+       
+       dd[[i]]$rdvol.sum=0
+       dd[[i]]$rA_d=0
+}
+
+```
+
+
+
+```{r,include=F,warning=F, error=FALSE, message=F}
+data_1=data %>% group_by(year,espece,model,sc.clim, CO2, prop.y,GRECO.sim,sc.g,d.strss,Tm,vol.sum.c)%>%tally()%>%dplyr::select(-n)
+
+a=data_1
+a$pj=paste(a$GRECO.sim,a$sc.g,a$espece,a$prop.y,a$sc.clim,a$CO2,a$model,sep = "_")
+
+b=unique(a$pj)
+
+c=list()
+
+for (i in 1:length(b)) {
+  c[[i]]=subset(a,pj==b[i])
+}
+
+
+an=c("2020","2030","2040","2050","2060","2070","2080","2090","2095")
+an1=as.numeric(an)
+g=c
+
+for (i in 1:length(g)) {
+  g[[i]]=g[[i]][g[[i]]$year%in%an1,]
+}
+
+cc=c
+
+for (i in 1:length(cc)) {
+  cc[[i]]$year=as.numeric(cc[[i]]$year)
+}
+
+
+hh=g
+for (i in 1:length(hh)) {
+       hh[[i]]$d.strssm=0
+       hh[[i]]$Tmh=0
+}
+
+
+for (i in 1:length(hh)) {
+    for (k in 1:length(an1)){
+    hh[[i]]$d.strssm[k]=mean(cc[[i]]$d.strss[1:(an1[k]-2009)])
+}
+}
+
+for (i in 1:length(hh)) {
+    for (k in 1:length(an1)){
+    hh[[i]]$Tmh[k]=mean(cc[[i]]$Tm[1:(an1[k]-2009)])
+}
+}
+```
+
+
+```{r,include=F,warning=F, error=FALSE, message=F}
+ccc=c
+for (i in 1:length(ccc)) {
+  for (k in 1:(length(ccc[[1]]$year)-3)) {
+
+  ccc[[i]]$volsumc[k]=sum(ccc[[i]]$vol.sum.c[1:k])
+  
+    
+}}
+
+cccc=do.call(rbind.data.frame,ccc)
+cccc=cccc[,-c(9:12)]
+cccc=cccc%>%dplyr::rename(vol.sum.c=volsumc,year.1=year)
+```
+
+
+```{r,include=F,warning=F, error=FALSE, message=F}
+e=do.call(rbind.data.frame,hh)
+e=e[,-c(9:11)]
+data_e=e%>%dplyr::rename(year.1=year,Tm=Tmh,d.strss=d.strssm)
+
+data_ee=merge(data_e,cccc)
+```
+
+
+
 
 
 ```{r groups}
@@ -132,7 +336,7 @@ REco.params$model[, QB := qb]
 REco.params$model[, BioAcc  := c(2.28,0.83,0.93,0.43,rep(0, 6))]
 
 # Unassimilated consumption
-REco.params$model[, Unassim := c(rep(0.2, 6), rep(0.4, 2), rep(NA, 2))]
+REco.params$model[, Unassim := c(rep(0.2, 6), rep(0.4, 2), rep(0, 2))]
 
 #Detrital Fate
 REco.params$model[, Detritus := c(rep(1, 9), rep(1, 1))]
