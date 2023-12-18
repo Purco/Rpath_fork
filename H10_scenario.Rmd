@@ -11,7 +11,7 @@ date: "`r Sys.Date()`"
 # Install package
 
 
-# remove.packages("Rpath")
+remove.packages("Rpath")
 remotes::install_github('Purco/Rpath_fork')
 ```
 
@@ -80,6 +80,7 @@ instal(package) # load list of packages in vector package
 ```{r,include=FALSE,warning = FALSE,message = FALSE}
 data_ini.ad<-read_excel("Stocking_Hypothesis_ad.xlsx",sheet = 1)
 data_ini.juv<-read_excel("Stocking_Hypothesis_juv.xlsx",sheet = 1)
+data_ini.Rgroup<-read_excel("Stocking_Hypothesis_Rgroup.xlsx",sheet = 1)
 ```
 
 
@@ -94,13 +95,389 @@ for (i in 1:length(scenarios)) {
 }
 ```
 
+
+####
+
 # Calcul
 ```{r}
 for (i in 1:length(scenarios)) {
- list_comb.d[[i]]=rbind(list_comb.d[[i]],data_ini.juv)
+
+# For adult group
+
+list_comb.d[[i]]$WT_Stk=list_comb.d[[i]]$prc_scn/100*list_comb.d[[i]]$Stocking_Tot #Calcul initial biomass by percentage in sceanrio (Stocking total fix)
+
+list_comb.d[[i]]$Nb_Stk=list_comb.d[[i]]$WT_Stk/list_comb.d[[i]]$Wi_Stk #Calcul initial number of species
+
+list_comb.d[[i]]$Wf_F=list_comb.d[[i]]$Wi_Stk*exp((list_comb.d[[i]]$SGR*list_comb.d[[i]]$Duration)/100)   #Calcul final Weight mean by SGR and duration (= 270 day)
+
+list_comb.d[[i]]$Nb_F=(1-list_comb.d[[i]]$Mortality/100)*list_comb.d[[i]]$Nb_Stk #Calcul final number by mortality rate
+
+list_comb.d[[i]]$WT_F=list_comb.d[[i]]$Nb_F*list_comb.d[[i]]$Wf_F #Calcul final biomass
+
+# For juvenil group
+
+list_comb.d[[i]]$Wf_F[5]=4.30 #Fix initial weight of Roach_juv 
+list_comb.d[[i]]$Wf_F[6]=5.60 #Fix initial weight of Tench_juv 
+
+list_comb.d[[i]]$Nb_F[5]=list_comb.d[[i]]$Nb_Stk[3]*72 # #Calcul final number of Roach-juv by multiplying the number of adults by 72 (fix including mortality ) 
+list_comb.d[[i]]$Nb_F[6]=list_comb.d[[i]]$Nb_Stk[4]*108 # #Calcul final number of Tench-juv by multiplying the number of adults by 108 (fix including mortality ) 
+
+list_comb.d[[i]]$WT_F[5]=list_comb.d[[i]]$Wf_F[5]*list_comb.d[[i]]$Nb_F[5] #Calcul final biomass of Roach_juv 
+list_comb.d[[i]]$WT_F[6]=list_comb.d[[i]]$Wf_F[6]*list_comb.d[[i]]$Nb_F[6]   #Calcul final biomass of Tench_juv
+
+list_comb.d[[i]]$Prc_F=list_comb.d[[i]]$WT_F/sum(list_comb.d[[i]]$WT_F)*100 #Calcul final percentage by species
+
+list_comb.d[[i]]$Rdt.net=((list_comb.d[[i]]$WT_F-list_comb.d[[i]]$WT_Stk)/1000)/0.1 # Yield net kg/ha (by pond surface 0.1 ha)
+
+# Duplicate the scenario name
+list_comb.d[[i]]$scenario[c(5:6)]=list_comb.d[[i]]$scenario[1]
+
+list_comb.d[[i]]$Z=-(log(list_comb.d[[i]]$Nb_F/list_comb.d[[i]]$Nb_Stk))#Calcul Z
+
+list_comb.d[[i]]$Nb.mean=(list_comb.d[[i]]$Nb_Stk-list_comb.d[[i]]$Nb_F)/list_comb.d[[i]]$Z#Calcul mean number
+
+list_comb.d[[i]]$W.mean=(list_comb.d[[i]]$Wi_Stk+list_comb.d[[i]]$Wf_F)/2 #Calcul mean weight
+
+# Calcul mean biomass for adult group
+list_comb.d[[i]]$B.g=list_comb.d[[i]]$Nb.mean*list_comb.d[[i]]$W.mean
+# Calcul mean biomass for juvenil group
+list_comb.d[[i]]$B.g[5]=list_comb.d[[i]]$WT_F[5]/2 #Calcul mean biomass of Roach_juv 
+list_comb.d[[i]]$B.g[6]=list_comb.d[[i]]$WT_F[6]/2 #Calcul mean biomass of Tench_juv
+
+
+list_comb.d[[i]]$B.g.m2=list_comb.d[[i]]$B.g/1000 #Calcul mean biomass in g/m2
+
+list_comb.d[[i]]$B_DW=list_comb.d[[i]]$B.g.m2*list_comb.d[[i]]$DW_rate #Calcul mean biomass in dry weight
+
+list_comb.d[[i]]$BA.g=list_comb.d[[i]]$WT_F-list_comb.d[[i]]$WT_Stk #Calcul biomass accumulation
+
+#Calcul P:B for adult group
+list_comb.d[[i]]$`P/B`=list_comb.d[[i]]$BA.g/list_comb.d[[i]]$B.g+list_comb.d[[i]]$Z
+
+#Calcul P:B for juv group
+list_comb.d[[i]]$`P/B`[5]=list_comb.d[[i]]$BA.g[5]/list_comb.d[[i]]$B.g[5]
+list_comb.d[[i]]$`P/B`[6]=list_comb.d[[i]]$BA.g[6]/list_comb.d[[i]]$B.g[6]
+
+list_comb.d[[i]]$Bacc.g.m2=list_comb.d[[i]]$BA.g/1000 # Calcul Biomass acc in g/m2
+
+# Calcul Biomass accumulate in dry weight
+list_comb.d[[i]]$Baacc_DW=list_comb.d[[i]]$Bacc.g.m2*list_comb.d[[i]]$DW_rate
+
 }
+
 ```
 
+
+```{r}
+# Add resource group
+for (i in 1:length(scenarios)) {
+ list_comb.d[[i]]=rbind(list_comb.d[[i]],data_ini.Rgroup)
+ list_comb.d[[i]]$scenario[c(7:10)]=list_comb.d[[i]]$scenario[1]
+}
+
+```
+
+
+```{r}
+list_comb.d.all=list_comb.d
+```
+
+```{r}
+# Put in dataframe
+
+All_data=do.call(rbind.data.frame,list_comb.d.all)
+```
+
+
+#### Ecopath
+
+```{r groups}
+#Groups and types for the H10
+
+groups <- c('Common_carp', 
+            'Pike_perch', 
+            'Roach',
+            'Tench', 
+            'Roach_juv', 
+            'Tench_juv', 
+            'Macroinvertebrate', 
+            'Zooplancton', 
+            'Phytoplancton',
+            'Detritus')
+
+types  <- c(rep(0, 8), 1, 2)
+stgroups <- c(rep(0, 10))
+
+REco.params <- create.rpath.params(group = groups, type = types,stgroup=stgroups)
+```
+
+
+
+```{r Model Table sans stanzas}
+REco.params$model[, Biomass := All_data[All_data$scenario==scenarios[36314],]$B_DW]
+
+REco.params$model[, PB := All_data[All_data$scenario==scenarios[36314],]$`P/B`]
+
+REco.params$model[, QB := All_data[All_data$scenario==scenarios[36314],]$`C/B`]
+
+#Biomass accumulation 
+REco.params$model[, BioAcc  := c(All_data[All_data$scenario==scenarios[36314],]$Baacc_DW[c(1:4)],rep(0, 6))]
+## Bio Acc for juv =0
+
+# Unassimilated consumption
+REco.params$model[, Unassim := c(rep(0.2, 6), rep(0.4, 2), rep(0, 2))]
+
+#Detrital Fate
+REco.params$model[, Detritus := c(rep(1, 9), rep(1, 1))]
+```
+
+
+
+```{r diet fill}
+
+REco.params$diet[, Common_carp       := c(NA,NA,NA,NA, 0.01, 0.01, 0.18, 0.22,0.12,0.46,NA)]
+                 
+REco.params$diet[, Pike_perch        := c(NA,NA,NA,NA, 0.28, 0.02, 0.12, 0.56,NA,0.02,NA)]
+ 
+REco.params$diet[, Roach             := c(NA,NA,NA,NA,NA,NA, 0.02, 0.25,0.14,0.59,NA)]
+
+REco.params$diet[, Tench             := c(NA,NA,NA,NA,NA,NA, 0.22, 0.12,0.10,0.56,NA)]
+
+REco.params$diet[, Roach_juv         := c(NA,NA,NA,NA,NA,NA, 0.01, 0.20,0.39,0.40,NA)]
+
+REco.params$diet[, Tench_juv         := c(NA,NA,NA,NA,NA,NA, 0.01, 0.15,0.24,0.60,NA)]
+
+REco.params$diet[, Macroinvertebrate := c(NA,NA,NA,NA,NA,NA, 0.08, 0.16,0.35,0.41,NA)]
+
+REco.params$diet[, Zooplancton     := c(NA,NA,NA,NA,NA,NA, NA, 0.11,0.27,0.62,NA)]
+
+
+```
+
+
+```{r Running ecopath}
+REco <- rpath(REco.params, eco.name = 'R Ecosystem')
+REco
+```
+
+### Model parameters
+ 
+
+
+
+Here are the rest of the columns for the model list.
+```{r Model Table sans stanzas}
+#Model
+## Biomass
+biomass <- c(1.44,
+             0.56,
+             1.34,
+             0.93,
+             0.45,
+             0.16,
+             0.25,
+             0.54,
+             1.92,
+             48.81)
+
+
+```
+
+
+
+
+
+
+
+
+```{r Model Table sans stanzas}
+All_data[All_data$scenario==scenarios[36314],]
+
+## Production by biomass
+
+pb <- c(1.69,
+        1.52,
+        0.71,
+        0.48,
+        2.00,
+        2.00,
+        14.50,
+        92.43,
+        118.7,
+        NA)
+
+## Consumption by biomass
+
+qb <- c(4.93,
+        2.19,
+        5.09,
+        5.18,
+        5.29,
+        5.14,
+        48.33,
+        308.1,
+        rep(NA,2))
+```
+
+
+
+```{r}
+# #Fisheries
+# #Landings
+# fleet <- c(rep(NA, 11))
+# REco.params$model[, Fleet := fleet]
+# 
+# #Discards
+# 
+# fleet.d <- c(rep(NA, 11))
+# REco.params$model[, Fleet.disc := fleet.d]
+```
+
+```{r Model Table sans stanzas}
+#Biomass accumulation 
+REco.params$model[, BioAcc  := c(2.28,0.83,0.93,0.43,rep(0, 6))]
+
+# Unassimilated consumption
+REco.params$model[, Unassim := c(rep(0.2, 6), rep(0.4, 2), rep(0, 2))]
+
+#Detrital Fate
+REco.params$model[, Detritus := c(rep(1, 9), rep(1, 1))]
+# REco.params$model[, Discards := c(rep(0,10))]
+# 
+# #Fisheries
+# #Landings
+# trawl  <- c(rep(0, 4), 0.08, 0, 0.32, 0, 0.09, 0, 0.05, 0.2, rep(0, 10), rep(NA, 3))
+# mid    <- c(rep(0, 12), 0.3, 0.08, 0.02, rep(0, 7), rep(NA, 3))
+# dredge <- c(rep(0, 15), 0.1, 0.5, rep(0, 5), rep(NA, 3))
+# REco.params$model[, Trawlers := trawl]
+# REco.params$model[, Midwater := mid]
+# REco.params$model[, Dredgers := dredge]
+# 
+# #Discards
+# trawl.d  <- c(1e-5, 1e-7, 0.001, 0.001, 0.005, 0.001, 0.009, 0.001, 0.04, 0.001,
+#               0.01, 0.08, 0.001, 0.001, 0.001, rep(0, 7), rep(NA, 3))
+# mid.d    <- c(rep(0, 2), 0.001, 0.001, 0.01, 0.001, 0.01, rep(0, 4), 0.05, 0.05,
+#               0.01, 0.01, rep(0, 7), rep(NA, 3))
+# dredge.d <- c(rep(0, 3), 0.001, 0.05, 0.001, 0.05, 0.001, 0.05, 0.001, 0.01, 0.05,
+#               rep(0, 3), 0.09, 0.01, 1e-4, rep(0, 4), rep(NA, 3))
+# REco.params$model[, Trawlers.disc := trawl.d]
+# REco.params$model[, Midwater.disc := mid.d]
+# REco.params$model[, Dredgers.disc := dredge.d]
+```
+
+```{r Model Table final, echo = F}
+knitr::kable(REco.params$model, 
+             caption = 'Example of completed model list')
+
+```
+
+###Stanza Parameters
+
+
+
+
+###Diet Parameters
+
+Note : 
+eg: REco.params$diet[Group == 'OtherGroundfish', Seabirds := 0.1]
+knitr::kable(REco.params$diet[, list(Group, Seabirds, Whales)])
+NA: import
+
+Here is the completed model parameter file for R Ecosystem:
+
+```{r diet fill}
+
+REco.params$diet[, Common_carp       := c(NA,NA,NA,NA, 0.01, 0.01, 0.18, 0.22,0.12,0.46,NA)]
+                 
+REco.params$diet[, Pike_perch        := c(NA,NA,NA,NA, 0.28, 0.02, 0.12, 0.56,NA,0.02,NA)]
+ 
+REco.params$diet[, Roach             := c(NA,NA,NA,NA,NA,NA, 0.02, 0.25,0.14,0.59,NA)]
+
+REco.params$diet[, Tench             := c(NA,NA,NA,NA,NA,NA, 0.22, 0.12,0.10,0.56,NA)]
+
+REco.params$diet[, Roach_juv         := c(NA,NA,NA,NA,NA,NA, 0.01, 0.20,0.39,0.40,NA)]
+
+REco.params$diet[, Tench_juv         := c(NA,NA,NA,NA,NA,NA, 0.01, 0.15,0.24,0.60,NA)]
+
+REco.params$diet[, Macroinvertebrate := c(NA,NA,NA,NA,NA,NA, 0.08, 0.16,0.35,0.41,NA)]
+
+REco.params$diet[, Zooplancton     := c(NA,NA,NA,NA,NA,NA, NA, 0.11,0.27,0.62,NA)]
+
+
+```
+
+```{r Dietfile Table, echo = F}
+knitr::kable(REco.params$diet, caption = 'Diet parameters for R Ecosystem')
+```
+
+```{r}
+colSums(REco.params$diet[,2:length(REco.params$diet)],na.rm = T)
+
+
+```
+
+
+
+###Pedigree parameters
+Rpath does not currently use pedigrees however, future Rpath extensions will use
+them.  Therefore we include them in the current parameter object. The
+default values are 1 (low confidence).  These defaults are not changed for R
+Ecosystem but can obviously be changed in a similar manner to the other parameter
+files.
+```{r pedigree table, echo = F}
+knitr::kable(REco.params$pedigree, caption = 'Pedigree parameters for R Ecosystem')
+```
+
+## Running Ecopath
+
+
+After creating the parameter object, running ecopath in R is relatively 
+straightforward.  It is just the function `rpath` supplied with the parameter object.
+Additionally, you can supply an ecosystem name for the output.
+
+```{r Running ecopath}
+REco <- rpath(REco.params, eco.name = 'R Ecosystem')
+REco
+```
+
+The output object from `rpath` is an S3 object type called 'Rpath'.  Rpath objects
+are a list of parameters from the mass balance.  However, the `print` function will
+display the same information as the "Basic Estimates" tab from EwE. You will also 
+notice that the `print` function will display whether the model is balanced or not.
+If the model was not balanced, it would list the groups that are not balanced.
+
+You can also display the mortalities associated with each group by supplying the
+argument `morts = T` to the `print` function.
+
+```{r Ecopath morts}
+print(REco, morts = T)
+```
+
+Note that if you wish to save the `print` output you need to use the function
+`write.rpath`.  This function will also accept the argument 'morts = T'.
+
+The generic function `summary` will display some summary statistics on the model
+as well as a list of attributes you can access.  To access any of the other 
+attributes simply use the standard list notation.
+
+```{r Ecopath summaries}
+summary(REco)
+REco$TL
+```
+
+One of the advantages of R is its graphical ability.  Users can feel free to develop
+their own graphical routines for the Rpath outputs.  However, we have included
+a basic food web plot.  The routine can include fisheries, display group numbers or 
+names, and even highlight a particular group.
+
+```{r Food Web Plots, fig.align = 'center', fig.height = 7, fig.width = 7}
+webplot(REco)
+webplot(REco, labels = T)
+# webplot(REco, fleets = T, highlight = 'AduRoundfish1')
+```
+
+
+####
 
 
 ```{r}
@@ -471,6 +848,109 @@ names, and even highlight a particular group.
 webplot(REco)
 webplot(REco, labels = T)
 # webplot(REco, fleets = T, highlight = 'AduRoundfish1')
+```
+
+
+
+
+
+# Calcul
+
+```{r}
+# for (i in 1:length(scenarios)) {
+#  list_comb.d[[i]]=rbind(list_comb.d[[i]],data_ini.juv)
+# }
+```
+
+```{r}
+# For adult group
+
+list_comb.d[[1]]$WT_Stk=list_comb.d[[1]]$prc_scn/100*list_comb.d[[1]]$Stocking_Tot #Calcul initial biomass by percentage in sceanrio (Stocking total fix)
+
+list_comb.d[[1]]$Nb_Stk=list_comb.d[[1]]$WT_Stk/list_comb.d[[1]]$Wi_Stk #Calcul initial number of species
+
+list_comb.d[[1]]$Wf_F=list_comb.d[[1]]$Wi_Stk*exp((list_comb.d[[1]]$SGR*list_comb.d[[1]]$Duration)/100)   #Calcul final Weight mean by SGR and duration (= 270 day)
+
+list_comb.d[[1]]$Nb_F=(1-list_comb.d[[1]]$Mortality/100)*list_comb.d[[1]]$Nb_Stk #Calcul final number by mortality rate
+
+list_comb.d[[1]]$WT_F=list_comb.d[[1]]$Nb_F*list_comb.d[[1]]$Wf_F #Calcul final biomass
+```
+
+
+```{r}
+# For juvenil group
+
+list_comb.d[[1]]$Wf_F[5]=4.30 #Fix initial weight of Roach_juv 
+list_comb.d[[1]]$Wf_F[6]=5.60 #Fix initial weight of Tench_juv 
+
+list_comb.d[[1]]$Nb_F[5]=list_comb.d[[1]]$Nb_Stk[3]*72 # #Calcul final number of Roach-juv by multiplying the number of adults by 72 (fix including mortality ) 
+list_comb.d[[1]]$Nb_F[6]=list_comb.d[[1]]$Nb_Stk[4]*108 # #Calcul final number of Tench-juv by multiplying the number of adults by 108 (fix including mortality ) 
+
+list_comb.d[[1]]$WT_F[5]=list_comb.d[[1]]$Wf_F[5]*list_comb.d[[1]]$Nb_F[5] #Calcul final biomass of Roach_juv 
+list_comb.d[[1]]$WT_F[6]=list_comb.d[[1]]$Wf_F[6]*list_comb.d[[1]]$Nb_F[6]   #Calcul final biomass of Tench_juv
+```
+
+
+```{r}
+list_comb.d[[1]]$Prc_F=list_comb.d[[1]]$WT_F/sum(list_comb.d[[1]]$WT_F)*100 #Calcul final percentage by species
+
+list_comb.d[[1]]$Rdt.net=((list_comb.d[[1]]$WT_F-list_comb.d[[1]]$WT_Stk)/1000)/0.1 # Yield net kg/ha (by pond surface 0.1 ha)
+```
+
+
+```{r}
+# Duplicate the scenario name
+list_comb.d[[1]]$scenario[c(5:6)]=list_comb.d[[1]]$scenario[1]
+```
+
+
+```{r}
+list_comb.d[[1]]$Z=-(log(list_comb.d[[1]]$Nb_F/list_comb.d[[1]]$Nb_Stk))#Calcul Z
+
+list_comb.d[[1]]$Nb.mean=(list_comb.d[[1]]$Nb_Stk-list_comb.d[[1]]$Nb_F)/list_comb.d[[1]]$Z#Calcul mean number
+
+list_comb.d[[1]]$W.mean=(list_comb.d[[1]]$Wi_Stk+list_comb.d[[1]]$Wf_F)/2 #Calcul mean weight
+
+# Calcul mean biomass for adult group
+list_comb.d[[1]]$B.g=list_comb.d[[1]]$Nb.mean*list_comb.d[[1]]$W.mean
+# Calcul mean biomass for juvenil group
+list_comb.d[[1]]$B.g[5]=list_comb.d[[1]]$WT_F[5]/2 #Calcul mean biomass of Roach_juv 
+list_comb.d[[1]]$B.g[6]=list_comb.d[[1]]$WT_F[6]/2 #Calcul mean biomass of Tench_juv
+
+
+list_comb.d[[1]]$B.g.m2=list_comb.d[[1]]$B.g/1000 #Calcul mean biomass in g/m2
+
+list_comb.d[[1]]$B_DW=list_comb.d[[1]]$B.g.m2*list_comb.d[[1]]$DW_rate #Calcul mean biomass in dry weight
+
+list_comb.d[[1]]$BA.g=list_comb.d[[1]]$WT_F-list_comb.d[[1]]$WT_Stk #Calcul biomass accumulation
+
+#Calcul P:B for adult group
+list_comb.d[[1]]$`P/B`=list_comb.d[[1]]$BA.g/list_comb.d[[1]]$B.g+list_comb.d[[1]]$Z
+
+#Calcul P:B for juv group
+list_comb.d[[1]]$`P/B`[5]=list_comb.d[[1]]$BA.g[5]/list_comb.d[[1]]$B.g[5]
+list_comb.d[[1]]$`P/B`[6]=list_comb.d[[1]]$BA.g[6]/list_comb.d[[1]]$B.g[6]
+
+list_comb.d[[1]]$Bacc.g.m2=list_comb.d[[1]]$BA.g/1000 # Calcul Biomass acc in g/m2
+
+# Calcul Biomass accumulate in dry weight
+list_comb.d[[1]]$Baacc_DW=list_comb.d[[1]]$Bacc.g.m2*list_comb.d[[1]]$DW_rate
+
+```
+
+
+```{r}
+# Add resource group
+for (i in 1:length(scenarios)) {
+ list_comb.d[[i]]=rbind(list_comb.d[[i]],data_ini.Rgroup)
+}
+```
+
+
+```{r}
+# Put in dataframe
+
+All_data=do.call(rbind.data.frame,list_comb.d)
 ```
 
 
