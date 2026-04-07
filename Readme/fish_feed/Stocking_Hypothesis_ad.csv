@@ -1,0 +1,5 @@
+Species;Nb_Stk ;Wi_Stk;WT_Stk;Stocking_Tot;Prc_Stk;Nb_F ; Wf_F;WT_F;Prc_F;Duration;SGR;Mortality;Rdt.net ;Price.U;Profi;Z;Nb.mean;W.mean;B.g;B.g.m2; DW_rate;B_DW;BA.g;P/B;Bacc.g.m2;Baacc_DW;C/B;DetInput
+Striped_catfish;;22;;6000;;;;;;84;2.83;2;;1.5;;;;;;;0.2312;;;;;;4.1462;0
+Silver_Carp;;5.26;;6000;;;;;;84;1.53;15;;1.5;;;;;;;0.2700;;;;;;6.1615;0
+Clarias_macrocephalus;;9.52;;6000;;;;;;84;2.35;15;;1.5;;;;;;;0.2700;;;;;;5.4593;0
+Common_carp;;5.56;;6000;;;;;;84;1.75;2;;1.5;;;;;;;0.2679;;;;;;6.2311;0
