@@ -66,28 +66,27 @@ NB: Separate file for feed if it is not fixed for each scenario (e.g., 3% of bio
 1 Scenario = 1 Fish combinations with different percentages 
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
-
 # Install and load the package to generate the combinations
 library(gtools)
 
-# Define the possible percentages (from 2 to 98 in steps of 2)
+# Define the possible percentages (from 2 to 98 in steps of 2) => [Modify the values according to the chosen percentage steps]
 percentages <- seq(2, 98, by = 2)
 
-# Generate all possible combinations of percentages
-combinations <- expand.grid(A = percentages, B = percentages, C = percentages, D = percentages)
+# Generate all possible combinations of percentages => [A, B, C, D correspond to the 4 selected species; modify this according to the number of species]
+combinations <- expand.grid(A = percentages, B = percentages, C = percentages, D = percentages) 
 
 # Filter the combinations for those whose sum is equal to 100
 valid_combinations <- combinations[rowSums(combinations) == 100, ]
 
-
 valid_combinations <-as.data.frame(valid_combinations)
 
-# Add a scenario column
-valid_combinations$scenario <- paste0("scenario", seq_len(nrow(valid_combinations)),sep="")
+# Add a scenario column (Add a 'scenario' column with unique identifiers 'scenario1', 'scenario2', ... by generating a sequence from 1 to the number of rows in valid_combinations)
+valid_combinations$scenario <- paste0("scenario", seq_len(nrow(valid_combinations)),sep="") 
 
 
 library(tidyverse)
 
+# Reshapes the data from wide to long format
 valid_combinations=valid_combinations %>%pivot_longer(cols=c(1:4),names_to = "sp_scn", values_to = "prc_scn")
 
 data.valid_combinations=as.data.frame(valid_combinations)
@@ -111,30 +110,25 @@ list_comb=list_combinations
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 # define list of packages in vector
-package<-c("readxl")
-
-# define function to load all packages
-instal<-function(x){ 
-  for(pkg in x){
-  instal=require(pkg, character.only = T) # load package x 
-}}
-instal(package) # load list of packages in vector package
-
+# package<-c("readxl") # for excel file
 
 # set working directory
-setwd("C:\\Users\\prralien\\Nextcloud2\\MyDrive\\A_Purco\\Thèse_Purco\\Proto_Vietnam\\Simulation\\Script\\23.Simulation_update_Area")
+
+setwd("P:\\Thèse Purco RALIEN\\Rpath_fork\\Rpath_fork\\Readme\\fish_feed")
 
 # Import data
-data_ini.ad<-read_excel("Stocking_Hypothesis_ad.xlsx",sheet = 1)
-data_ini.Feed<-read_excel("Stocking_Hypothesis_Feed.xlsx",sheet = 1)
-data_ini.Rgroup<-read_excel("Stocking_Hypothesis_Rgroup.xlsx",sheet = 1)
+data_ini.ad<- read_csv2("Stocking_Hypothesis_ad.csv") 
+data_ini.ad$DW_rate <- as.numeric(data_ini.ad$DW_rate)
+data_ini.Feed<- read_csv2("Stocking_Hypothesis_Feed.csv")
+data_ini.Feed$DW_rate <- as.numeric(data_ini.Feed$DW_rate)
+data_ini.Rgroup<- read_csv2("Stocking_Hypothesis_Rgroup.csv")
 
-#add scenario + data adult
+
+#add scenario + fish data initial adult
 list_comb.d=list()
 for (i in 1:length(scenarios)) {
  list_comb.d[[i]]=cbind(data_ini.ad,list_comb[[i]])
 }
-
 
 
 
@@ -145,49 +139,66 @@ for (i in 1:length(scenarios)) {
   
 
 # For adult group
+  
+## Calcul initial biomass by percentage in scenario (Stocking total fix)
+list_comb.d[[i]]$WT_Stk=list_comb.d[[i]]$prc_scn/100*list_comb.d[[i]]$Stocking_Tot 
 
-list_comb.d[[i]]$WT_Stk=list_comb.d[[i]]$prc_scn/100*list_comb.d[[i]]$Stocking_Tot #Calcul initial biomass by percentage in sceanrio (Stocking total fix)
+## Calcul initial number of species
+list_comb.d[[i]]$Nb_Stk=list_comb.d[[i]]$WT_Stk/list_comb.d[[i]]$Wi_Stk 
 
-list_comb.d[[i]]$Nb_Stk=list_comb.d[[i]]$WT_Stk/list_comb.d[[i]]$Wi_Stk #Calcul initial number of species
+## Calcul final Weight mean by SGR and duration 
+list_comb.d[[i]]$Wf_F=list_comb.d[[i]]$Wi_Stk*exp((list_comb.d[[i]]$SGR*list_comb.d[[i]]$Duration)/100) 
 
-list_comb.d[[i]]$Wf_F=list_comb.d[[i]]$Wi_Stk*exp((list_comb.d[[i]]$SGR*list_comb.d[[i]]$Duration)/100)   #Calcul final Weight mean by SGR and duration (= 84 day)
+## Calcul final number by mortality rate
+list_comb.d[[i]]$Nb_F=(1-list_comb.d[[i]]$Mortality/100)*list_comb.d[[i]]$Nb_Stk
 
-list_comb.d[[i]]$Nb_F=(1-list_comb.d[[i]]$Mortality/100)*list_comb.d[[i]]$Nb_Stk #Calcul final number by mortality rate
+## Calcul final biomass
+list_comb.d[[i]]$WT_F=list_comb.d[[i]]$Nb_F*list_comb.d[[i]]$Wf_F 
 
-list_comb.d[[i]]$WT_F=list_comb.d[[i]]$Nb_F*list_comb.d[[i]]$Wf_F #Calcul final biomass
+## Calcul final percentage by species
+list_comb.d[[i]]$Prc_F=list_comb.d[[i]]$WT_F/sum(list_comb.d[[i]]$WT_F)*100 
 
-
-list_comb.d[[i]]$Prc_F=list_comb.d[[i]]$WT_F/sum(list_comb.d[[i]]$WT_F)*100 #Calcul final percentage by species
-
-list_comb.d[[i]]$Rdt.net=((list_comb.d[[i]]$WT_F-list_comb.d[[i]]$WT_Stk)/1000)/0.01 # Yield net kg/ha (by pond surface 0.01 ha)
-
-# Add economic value
-list_comb.d[[i]]$Profi=list_comb.d[[i]]$Rdt.net*list_comb.d[[i]]$Price.U # Calcul profitability by species
+## Yield net kg/ha (by pond surface 0.01 ha) => [ Modify the 0.01 values based on the pond surface area]
+list_comb.d[[i]]$Rdt.net=((list_comb.d[[i]]$WT_F-list_comb.d[[i]]$WT_Stk)/1000)/0.01 
 
 
-#Calcul Z
 
-list_comb.d[[i]]$Z=-(log(list_comb.d[[i]]$Nb_F/list_comb.d[[i]]$Nb_Stk))#Calcul Z
+# Add economic value( Calcul profitability by species)
+list_comb.d[[i]]$Profi=list_comb.d[[i]]$Rdt.net*list_comb.d[[i]]$Price.U 
 
-list_comb.d[[i]]$Nb.mean=(list_comb.d[[i]]$Nb_Stk-list_comb.d[[i]]$Nb_F)/list_comb.d[[i]]$Z#Calcul mean number
 
-list_comb.d[[i]]$W.mean=(list_comb.d[[i]]$Wi_Stk+list_comb.d[[i]]$Wf_F)/2 #Calcul mean weight
+
+# Calcul Z
+list_comb.d[[i]]$Z=-(log(list_comb.d[[i]]$Nb_F/list_comb.d[[i]]$Nb_Stk))
+
+# Calcul mean number
+list_comb.d[[i]]$Nb.mean=(list_comb.d[[i]]$Nb_Stk-list_comb.d[[i]]$Nb_F)/list_comb.d[[i]]$Z
+
+# Calcul mean weight
+list_comb.d[[i]]$W.mean=(list_comb.d[[i]]$Wi_Stk+list_comb.d[[i]]$Wf_F)/2 
 
 # Calcul mean biomass for adult group
 list_comb.d[[i]]$B.g=list_comb.d[[i]]$Nb.mean*list_comb.d[[i]]$W.mean
 
+# Calcul mean biomass in g/m2 (by pond surface 100m²) 
+## => [ Modify the 100m² values based on the pond surface area]
+list_comb.d[[i]]$B.g.m2=list_comb.d[[i]]$B.g / 100 
 
-list_comb.d[[i]]$B.g.m2=list_comb.d[[i]]$B.g/100 #Calcul mean biomass in g/m2 (by pond surface 100m2)
 
-list_comb.d[[i]]$B_DW=list_comb.d[[i]]$B.g.m2*list_comb.d[[i]]$DW_rate #Calcul mean biomass in dry weight
+# Calcul mean biomass in dry weight
+list_comb.d[[i]]$B_DW=list_comb.d[[i]]$B.g.m2*list_comb.d[[i]]$DW_rate 
 
-list_comb.d[[i]]$BA.g=list_comb.d[[i]]$WT_F-list_comb.d[[i]]$WT_Stk #Calcul biomass accumulation
 
-#Calcul P:B for adult group
+# Calcul biomass accumulation
+list_comb.d[[i]]$BA.g=list_comb.d[[i]]$WT_F-list_comb.d[[i]]$WT_Stk 
+
+
+# Calcul P:B for adult group
 list_comb.d[[i]]$`P/B`=list_comb.d[[i]]$BA.g/list_comb.d[[i]]$B.g+list_comb.d[[i]]$Z
 
-
-list_comb.d[[i]]$Bacc.g.m2=list_comb.d[[i]]$BA.g/100 # Calcul Biomass acc in g/m2 (by pond surface 100m2)
+# Calcul Biomass acc in g/m2 (by pond surface 100m²) 
+## => [ Modify the 100m² values based on the pond surface area]
+list_comb.d[[i]]$Bacc.g.m2=list_comb.d[[i]]$BA.g/100 
 
 # Calcul Biomass accumulate in dry weight
 list_comb.d[[i]]$Baacc_DW=list_comb.d[[i]]$Bacc.g.m2*list_comb.d[[i]]$DW_rate
@@ -195,38 +206,52 @@ list_comb.d[[i]]$Baacc_DW=list_comb.d[[i]]$Bacc.g.m2*list_comb.d[[i]]$DW_rate
 }
 
 
-#add scenario + data feed
+
+# Add scenario + data feed
+## [c(5:5)=> modify based on the feed row]
+
 for (i in 1:length(scenarios)) {
  list_comb.d[[i]]=rbind(list_comb.d[[i]],data_ini.Feed)
  list_comb.d[[i]]$scenario[c(5:5)]=list_comb.d[[i]]$scenario[1]
 }
 
-for (i in 1:length(scenarios)) {
-# For Feed group
-## Calcul biomass
 
-list_comb.d[[i]]$B_DW[5]=list_comb.d[[i]]$Nb_Stk[1]*251/100*list_comb.d[[i]]$DW_rate[5]/list_comb.d[[i]]$Duration[5] # #Calculate the biomass of feed by multiplying the initial number of striped catfish by 251 (factor including growth). Adjust this value to the surface area per m² by dividing by 100, then convert it to dry weight. Calculate the average by dividing by the duration.
+
+for (i in 1:length(scenarios)) {
+
+# For Feed group
+## Calcul biomass => Calculate the biomass of feed by multiplying the initial number of striped catfish by 251 (factor including growth) [251 => insert value based on simulation]. Adjust this value to the surface area per m² by dividing by 100 [100m² => insert value based on the pond surface area], then convert it to dry weight. Calculate the average by dividing by the duration.
+## [[5]=> modify based on the feed row]
+list_comb.d[[i]]$B_DW[5]=list_comb.d[[i]]$Nb_Stk[1]*251/100*list_comb.d[[i]]$DW_rate[5]/list_comb.d[[i]]$Duration[5] 
 
 ## Calcul DetInput
-list_comb.d[[i]]$DetInput[5]=list_comb.d[[i]]$B_DW[5]*list_comb.d[[i]]$Duration[5]/2 # #Calculate the Detritus input of feed by multiplying the biomass of feed by the duration, then calculate the average by dividing by 2.
+## Calculate the Detritus input of feed by multiplying the biomass of feed by the duration, then calculate the average by dividing by 2.
+## [[5]=> modify based on the feed row]
+list_comb.d[[i]]$DetInput[5]=list_comb.d[[i]]$B_DW[5]*list_comb.d[[i]]$Duration[5]/2 
 
 }
+
+
 
 for (i in 1:length(scenarios)) {
 # Add economic value - feed value
-  
-list_comb.d[[i]]$Profi[1]=list_comb.d[[i]]$Profi[1] - ((list_comb.d[[i]]$Nb_Stk[1]*251)/1000)/0.01*0.6 # #Calculate the profitability by substracting the fish profitability by the feed value ( which obtained by multiplying the initial number of striped catfish by 251 (factor including growth).Dividing by 1000 to have the value in kg. Adjust this value to the surface area per ha by dividing by 0.0100, then multiply it by the price of the feed 0.6)
+## Calculate the profitability by substracting the fish profitability by the feed value ( which obtained by multiplying the initial number of striped catfish by 251 (factor including growth) [251 => insert value based on simulation].Dividing by 1000 to have the value in kg. Adjust this value to the surface area per ha by dividing by 0.0100 [0.01 ha => insert value based on the pond surface area], then multiply it by the price of the feed 0.6) => [ Modify the 0.6 values based on the price of the feed] 
+## [[1]=> modify based on the feed fish row]
+list_comb.d[[i]]$Profi[1]=list_comb.d[[i]]$Profi[1] - ((list_comb.d[[i]]$Nb_Stk[1]*251)/1000)/0.01*0.6 
 
 }
 
+
+
 # Add resource group
+## [c(6:9)=> modify based on the resource available row]
 for (i in 1:length(scenarios)) {
  list_comb.d[[i]]=rbind(list_comb.d[[i]],data_ini.Rgroup)
  list_comb.d[[i]]$scenario[c(6:9)]=list_comb.d[[i]]$scenario[1]
 }
 
 
-# Loop to reorganize the rows of each dataframe in the list list_comb.d
+# Loop to reorganize the rows of each dataframe in the list list_comb.d (feed and detritus at the end )
 for (i in 1:length(list_comb.d)) {
   
   # Extract the current dataframe
@@ -259,9 +284,7 @@ All_data=do.call(rbind.data.frame,list_comb.d.all)
 # Ecopath for all scenario
 
 
-
 # Install package
-# remove.packages("Rpath")
 # remotes::install_github('https://github.com/Purco/Rpath_fork.git')
 # remotes::install_github('https://github.com/Purco/enaR.git')
 
@@ -275,8 +298,8 @@ temps_debut <- system.time({
 results_list <- list()
 for (i in 1:length(scenarios)) {
 
-#Groups and types for the H10
-
+# Groups and types for each functional group
+## => [Modify and reorder  the functional group according to "list_comb.d"]
 groups <- c('Striped_catfish', 
             'Silver_Carp', 
             'Clarias_macrocephalus', 
@@ -287,7 +310,11 @@ groups <- c('Striped_catfish',
             'Feed',
             'Detritus')
 
+## => [Modify and reorder  the functional group according to "list_comb.d"]
+## => [0 for consumer, 1 for primary production, 2 for detritus and feed]
 types  <- c(rep(0, 6), 1,2, 2)
+
+## [9 => modify based on the total number of functional groups]
 stgroups <- c(rep(0, 9))
 
 REco.params <- create.rpath.params(group = groups, type = types,stgroup=stgroups)
@@ -299,19 +326,25 @@ REco.params$model[, PB := All_data[All_data$scenario==scenarios[i],]$`P/B`]
 REco.params$model[, QB := All_data[All_data$scenario==scenarios[i],]$`C/B`]
 
 
-#Biomass accumulation 
+#Biomass accumulation
+## [ => c(1:4) represents the fish groups;(0, 5) for other functional groups]
 REco.params$model[, BioAcc  := c(All_data[All_data$scenario==scenarios[i],]$Baacc_DW[c(1:4)],rep(0, 5))]
 
 # Unassimilated consumption
+## [rep(0.2, 4) => for the fish groups;rep(0.4, 2) for MIB and Zoo; rep(0, 3) for other functional groups]
 REco.params$model[, Unassim := c(rep(0.2, 4), rep(0.4, 2), rep(0, 3))]
 
 # Detritus import
-REco.params$model[, DetInput := All_data[All_data$scenario==scenarios[i],]$DetInput]#add value from feed
+## Add value from feed
+REco.params$model[, DetInput := All_data[All_data$scenario==scenarios[i],]$DetInput]
 
 #Detrital Fate
 REco.params$model[, Detritus := c(rep(1, 7), rep(1, 2))]
 
-REco.params$model[, Feed := c(rep(0, 7),1,0)] # Add second det (PR)
+## Add second detrital Fate for feed 
+REco.params$model[, Feed := c(rep(0, 7),1,0)] 
+
+
 
 # Diet
 
@@ -340,9 +373,6 @@ All_results_sc=cbind(All_results,All_data)
 })
 temps_ecoule <- temps_debut["elapsed"]
 print(temps_ecoule)
-
-#print result
-# write.csv(All_results_sc,"All_results_sc.csv")
 
 
 
@@ -417,16 +447,19 @@ Resp[(nliving+ndead):(nliving+ndead)]<-0 #change (PR)
 # Net primary production and phytoplankton respiration are respectively 80% and 20% of gross primary production.
 #From Documentation for the Energy Modeling and Analysis eXercise (EMAX) (Link and Methratta, 2006)
 
-# gross<-gross_net*REco$PB[9]*REco$Biomass[9]
+
 gross<-0
-# Resp[9]<-gross-(REco$PB[9]*REco$Biomass[9])
+
+
+## [c(7) =>  c(7) represents the primary production row; adjust this column according to the corresponding row in the data]
 Resp[c(7)]<-0
 
 # Calculate imports: negative biomass accumulation, grosspp
 
 Import<-abs(ifelse(results_list[[k]]$BA<0,results_list[[k]]$BA,0))
 # Import<- REco$PB*REco$Biomass
-# Import[9]<-REco$PB[9]*REco$Biomass[9]
+
+## [c(7) =>  c(7) represents the primary production row; adjust this column according to the corresponding row in the data]
 Import[c(7)]<-gross
 Import<-Import[1:(nliving+ndead)]
 
@@ -464,8 +497,10 @@ temps_ecoule <- temps_debut["elapsed"]
 print(temps_ecoule)
 
 #print result
-# write.csv(All_enar.res_sc,"All_enar_res_simul_23.csv")
+# write.csv(All_enar.res_sc,"All_enar_res_simul.csv")
 ```
+
+
 
 
 
