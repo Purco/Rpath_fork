@@ -6,6 +6,10 @@ output:
   html_document: default
   word_document: default
   pdf_document: default
+
+knit: (function(input_file, encoding) {
+  rmarkdown::render(input_file, encoding = encoding, output_format = "all")
+})
 ---
 
 # Fish species selected
