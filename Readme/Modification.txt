@@ -1,3 +1,5 @@
+1. Rpath package (Rpath_fork)
+
 Compared to the original Rpath, some modifications were made to adapt it to an aquaculture system.
 
 The modifications were made in section R and the following subsections:
@@ -8,3 +10,14 @@ The modifications were made in section R and the following subsections:
 - ecopath
 
 Furthermore, the condition  that  the EE values must be less than 1 in the original Rpath  has been removed.
+
+
+
+
+
+2. EnaR package (enaR_fork)
+
+
+The FCI formula was changed. In the original implementation in enaR, FCI was calculated as FCI <- TSTc / TST, where TSTc is the total flow cycled and TST is the total system throughflow. It was later modified to FCI <- TSTc / TSTp, where TSTp represents the total system throughput (like in Ecopath model).
+
+These modifications were made in section R and in enaFlow.R.
