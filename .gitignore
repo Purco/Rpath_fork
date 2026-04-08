@@ -7,8 +7,6 @@
 data
 outputs
 code
-*.xlsx
-*.docx
 Ecopath_dev
 Rpath.Rcheck*
 src/*.o
