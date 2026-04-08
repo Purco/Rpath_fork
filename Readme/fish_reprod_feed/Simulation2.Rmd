@@ -56,6 +56,7 @@ output:
 # Assessment of juvenile production from the fry of the roah and tench adult (Use and refer to the  template "Stocking_Hypothesis_juv")
 - Stocking total biomass of all fish (Stocking_Tot): [insert value]
 - Unit price (Price.U): [insert value]
+- Consumption/Biomass ratio (C/B): [insert value]
 
 # Assessment of available resources (Use and refer to the  template "Stocking_Hypothesis_Rgroup")
 
@@ -64,7 +65,6 @@ output:
 - Consumption/Biomass ratio (C/B): [insert value]
 
 NB: A separate file was used for feed, and it was fixed for each scenario: 44,485 g for the entire period per pond.
-
 
 
 
@@ -79,10 +79,10 @@ graphics.off()
 # Install and load the package to generate the combinations
 library(gtools)
 
-# Define the possible percentages (from 5 to 95 in steps of 5)
+# Define the possible percentages (from 5 to 95 in steps of 5) => [Modify the values according to the chosen percentage steps]
 percentages <- seq(5, 95, by = 5)
 
-# Generate all possible combinations of percentages
+# Generate all possible combinations of percentages => [A, B, C, D, E correspond to the 5 selected species; modify this according to the number of species]
 combinations <- expand.grid(A = percentages, B = percentages, C = percentages, D = percentages,E = percentages)
 
 # Filter the combinations for those whose sum is equal to 100
@@ -92,6 +92,7 @@ valid_combinations <- combinations[rowSums(combinations) == 100, ]
 valid_combinations <-as.data.frame(valid_combinations)
 
 # Add a scenario column
+# Add a scenario column (Add a 'scenario' column with unique identifiers 'scenario1', 'scenario2', ... by generating a sequence from 1 to the number of rows in valid_combinations)
 valid_combinations$scenario <- paste0("scenario", seq_len(nrow(valid_combinations)),sep="")
 
 
@@ -131,7 +132,7 @@ instal(package) # load list of packages in vector package
 
 
 # set working directory
-setwd("C:\\Users\\prralien\\Nextcloud2\\MyDrive\\A_Purco\\Thèse_Purco\\Proto_Nutritious_pond\\Script\\4.Simulation")
+setwd("P:\\Thèse Purco RALIEN\\Rpath_fork\\Rpath_fork\\Readme\\fish_reprod_feed")
 
 # Import data
 data_ini.ad<-read_excel("Stocking_Hypothesis_ad.xlsx",sheet = 1)
@@ -179,13 +180,20 @@ list_comb.d[[i]]$WT_F=list_comb.d[[i]]$Nb_F*list_comb.d[[i]]$Wf_F
 # For juvenil group
 
 ## Fix initial weight of Roach_juv 
+### [[6]=> modify based on the Roach_juv row]
+### =5 => Initial weight (Wi_Stk): [insert value]
 list_comb.d[[i]]$Wf_F[6]=5 
+
 ## Fix initial weight of Tench_juv 
+## [[7]=> modify based on the Tench_juv row]
+### =1.5 => Initial weight (Wi_Stk): [insert value]
 list_comb.d[[i]]$Wf_F[7]=1.5
 
 ## Calcul final number of Roach-juv [6] by multiplying the number of adults by 1000 [4](fix including mortality ) 
+### minus 3 => -3: there must be at least 3 adults
 list_comb.d[[i]]$Nb_F[6]=(list_comb.d[[i]]$Nb_Stk[4]-3)*1000
-## Calcul final number of Tench-juv [7] by multiplying the number of adults by 1000 [5] (fix including mortality ) 
+## Calcul final number of Tench-juv [7] by multiplying the number of adults by 1000 [5] (fix including mortality )
+### minus 3 => -3: there must be at least 3 adults
 list_comb.d[[i]]$Nb_F[7]=(list_comb.d[[i]]$Nb_Stk[5]-3)*1000
 
 ## Calcul final biomass of Roach_juv
@@ -198,6 +206,7 @@ list_comb.d[[i]]$WT_F[7]=list_comb.d[[i]]$Wf_F[7]*list_comb.d[[i]]$Nb_F[7]
 list_comb.d[[i]]$Prc_F=list_comb.d[[i]]$WT_F/sum(list_comb.d[[i]]$WT_F)*100 
 
 # Yield net kg/ha (by pond surface 0.05 ha)
+## => [ Modify the 500m² values based on the pond surface area]
 list_comb.d[[i]]$Rdt.net=((list_comb.d[[i]]$WT_F-list_comb.d[[i]]$WT_Stk)/1000)/0.05 
 
 
@@ -207,6 +216,7 @@ list_comb.d[[i]]$Rdt.net=((list_comb.d[[i]]$WT_F-list_comb.d[[i]]$WT_Stk)/1000)/
 list_comb.d[[i]]$Profi=list_comb.d[[i]]$Rdt.net*list_comb.d[[i]]$Price.U 
 
 # Duplicate the scenario name
+## [c(6:7)=> modify based on the juvenile row]
 list_comb.d[[i]]$scenario[c(6:7)]=list_comb.d[[i]]$scenario[1]
 
 
@@ -231,6 +241,7 @@ list_comb.d[[i]]$B.g[6]=list_comb.d[[i]]$WT_F[6]/2
 list_comb.d[[i]]$B.g[7]=list_comb.d[[i]]$WT_F[7]/2 
 
 # Calcul mean biomass in g/m2 (by pond surface 500m2)
+## => [ Modify the 500m² values based on the pond surface area]
 list_comb.d[[i]]$B.g.m2=list_comb.d[[i]]$B.g/500 
 
 # Calcul mean biomass in dry weight
@@ -259,6 +270,7 @@ list_comb.d[[i]]$Baacc_DW=list_comb.d[[i]]$Bacc.g.m2*list_comb.d[[i]]$DW_rate
 
 
 #add scenario + data feed
+## [c(8:8)=> modify based on the feed row]
 for (i in 1:length(scenarios)) {
  list_comb.d[[i]]=rbind(list_comb.d[[i]],data_ini.Feed)
  list_comb.d[[i]]$scenario[c(8:8)]=list_comb.d[[i]]$scenario[1] # [8] line for feed
@@ -267,32 +279,33 @@ for (i in 1:length(scenarios)) {
 for (i in 1:length(scenarios)) {
 # For Feed group
 ## Calcul biomass
-
-list_comb.d[[i]]$B_DW[8]=44485/500*list_comb.d[[i]]$DW_rate[8]/list_comb.d[[i]]$Duration[8] # #Calculate the biomass of feed : Total for each pond during all period 44 485g. Adjust this value to the surface area per m² by dividing by 500, then convert it to dry weight. Calculate the average by dividing by the duration.
+# #Calculate the biomass of feed : Total for each pond during all period 44 485g. Adjust this value to the surface area per m² by dividing by 500, then convert it to dry weight. Calculate the average by dividing by the duration.
+list_comb.d[[i]]$B_DW[8]=44485/500*list_comb.d[[i]]$DW_rate[8]/list_comb.d[[i]]$Duration[8] 
 
 ## Calcul DetInput
-list_comb.d[[i]]$DetInput[8]=list_comb.d[[i]]$B_DW[8]*list_comb.d[[i]]$Duration[8] # #Calculate the Detritus input of feed by multiplying the biomass of feed by the duration.
+# #Calculate the Detritus input of feed by multiplying the biomass of feed by the duration.
+list_comb.d[[i]]$DetInput[8]=list_comb.d[[i]]$B_DW[8]*list_comb.d[[i]]$Duration[8] 
 
 }
 
 
 # Add economic value - feed value
+## Calculate the profitability by substracting the fish profitability by the feed value ( which obtained by multiplying the total of feed biomass 44 485g.Dividing by 1000 to have the value in kg. Adjust this value to the surface area per ha by dividing by 0.0500, then multiply it by the price of the feed )
+
 for (i in 1:length(scenarios)) {
-
-  
-list_comb.d[[i]]$Profi[1]=list_comb.d[[i]]$Profi[1] - ((44485)/1000)/0.05*list_comb.d[[i]]$Price.U[8] # #Calculate the profitability by substracting the fish profitability by the feed value ( which obtained by multiplying the total of feed biomass 44 485g.Dividing by 1000 to have the value in kg. Adjust this value to the surface area per ha by dividing by 0.0500, then multiply it by the price of the feed )
-
+list_comb.d[[i]]$Profi[1]=list_comb.d[[i]]$Profi[1] - ((44485)/1000)/0.05*list_comb.d[[i]]$Price.U[8] 
 }
 
 
 # Add resource group
+## [c(9:13)=> modify based on the resource available row]
 for (i in 1:length(scenarios)) {
  list_comb.d[[i]]=rbind(list_comb.d[[i]],data_ini.Rgroup)
  list_comb.d[[i]]$scenario[c(9:13)]=list_comb.d[[i]]$scenario[1]
 }
 
 
-# Loop to reorganize the rows of each dataframe in the list list_comb.d
+# Loop to reorganize the rows of each dataframe in the list list_comb.d (feed and detritus at the end )
 for (i in 1:length(list_comb.d)) {
   
   # Extract the current dataframe
@@ -341,8 +354,8 @@ temps_debut <- system.time({
 results_list <- list()
 for (i in 1:length(scenarios)) {
 
-#Groups and types for the H10
-
+# Groups and types for each functional group
+## => [Modify and reorder  the functional group according to "list_comb.d"]
 groups <- c('Grass_carp', 
             'Carp', 
             'Pike_perch', 
@@ -357,7 +370,11 @@ groups <- c('Grass_carp',
             'Feed',
             'Detritus')
 
+## => [Modify and reorder  the functional group according to "list_comb.d"]
+## => [0 for consumer, 1 for primary production, 2 for detritus and feed]
 types  <- c(rep(0, 9), 1,1,2, 2)
+
+## [13 => modify based on the total number of functional groups]
 stgroups <- c(rep(0, 13))
 
 REco.params <- create.rpath.params(group = groups, type = types,stgroup=stgroups)
@@ -370,18 +387,23 @@ REco.params$model[, QB := All_data[All_data$scenario==scenarios[i],]$`C/B`]
 
 
 #Biomass accumulation 
+## [ => c(1:4) represents the fish groups;(0, 5) for other functional groups]
 REco.params$model[, BioAcc  := c(All_data[All_data$scenario==scenarios[i],]$Baacc_DW[c(1:5)],rep(0, 8))]
 
 # Unassimilated consumption
+## [rep(0.2, 4) => for the fish groups;rep(0.4, 2) for MIB and Zoo; rep(0, 3) for other functional groups]
 REco.params$model[, Unassim := c(rep(0.2, 7), rep(0.4, 2), rep(0, 4))]
 
 # Detritus import
-REco.params$model[, DetInput := All_data[All_data$scenario==scenarios[i],]$DetInput]#add value from feed
+#add value from feed
+REco.params$model[, DetInput := All_data[All_data$scenario==scenarios[i],]$DetInput]
 
 #Detrital Fate
 REco.params$model[, Detritus := c(rep(1, 11), rep(1, 2))]
 
+## Add second detrital Fate for feed
 REco.params$model[, Feed := c(rep(0, 11),1,0)] # Add second det (PR)
+
 
 # Diet
 
@@ -405,7 +427,7 @@ REco.params$diet[, Zooplancton       := c(NA,NA,NA,NA,NA,0.000,0.000,0.000,0.590
 
 
 REco <- rpath(REco.params, eco.name = 'R Ecosystem')
-
+## [13 => modify based on the total number of functional groups]
 results_list[[i]]=cbind(data.frame(REco[c(4:13,15)]),data.frame(Scena = rep(scenarios[i], 13)))
 }
 
@@ -418,8 +440,7 @@ All_results_sc=cbind(All_results,All_data)
 temps_ecoule <- temps_debut["elapsed"]
 print(temps_ecoule)
 
-#print result
-# write.csv(All_results_sc,"All_results_sc.csv")
+
 
 
 # EnaR
@@ -470,9 +491,7 @@ QQ<-cbind(QQ,Feed,Detritus)#change (PR)
 Export<-(ifelse(results_list[[k]]$BA>0,results_list[[k]]$BA,0))
 Export<-Export[1:(nliving+ndead)]
 
-# for (i in 1:ndead){
-#   Export[nliving+i]<-REco$PB[(nliving+i)]*REco$Biomass[(nliving+i)]
-# } # Modified
+
 
 for (i in 1:ndead){
   Export[nliving+i]<-M0[(nliving+i)]*results_list[[k]]$Biomass[(nliving+i)]-sum(Export[1:nliving])
@@ -487,22 +506,18 @@ Resp<-Resp[1:(nliving+ndead)]
 Resp[(nliving+ndead):(nliving+ndead)]<-0 #change (PR)
 
 
-# Estimate respiration of primary producers: grosspp - netpp
+# Estimate respiration of primary producers
 
-# gross_net<-100/80
-# Net primary production and phytoplankton respiration are respectively 80% and 20% of gross primary production.
-#From Documentation for the Energy Modeling and Analysis eXercise (EMAX) (Link and Methratta, 2006)
 
-# gross<-gross_net*REco$PB[9]*REco$Biomass[9]
 gross<-0
-# Resp[9]<-gross-(REco$PB[9]*REco$Biomass[9])
+
+## [c(10:11) =>  c(10:11) represents the primary production row; adjust this column according to the corresponding row in the data]
 Resp[c(10:11)]<-0 #change (PR)
 
 # Calculate imports: negative biomass accumulation, grosspp
 
 Import<-abs(ifelse(results_list[[k]]$BA<0,results_list[[k]]$BA,0))
-# Import<- REco$PB*REco$Biomass
-# Import[9]<-REco$PB[9]*REco$Biomass[9]
+## [c(10:11) =>  c(10:11) represents the primary production row; adjust this column according to the corresponding row in the data]
 Import[c(10:11)]<-gross #change (PR)
 Import<-Import[1:(nliving+ndead)]
 
@@ -540,54 +555,32 @@ temps_ecoule <- temps_debut["elapsed"]
 print(temps_ecoule)
 
 #print result
-write.csv(All_enar.res_sc,"All_enar_res_simul_4.csv")
+write.csv(All_enar.res_sc,"All_enar_res_simul.csv")
 ```
 
 
 
-# Visualisation des resultats
+# Visualisation of resultats
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 library(stringr)
 All_enar.res_sc$scena1 <- str_extract(All_enar.res_sc$Scena, "\\d+$")
 ```
 
-### Number scenario
+## Number of scenario
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 
 length(unique(All_enar.res_sc$scena1))
 ```
 
-## Rendement net 
+
+## Summary
+
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
-library(tidyverse)
 Rdt.All_enar.res_sc=All_enar.res_sc%>%group_by(scenario,scena1)%>% summarise(RDT=sum(Rdt.net,na.rm = T),FCI=mean(FCI),Profitability=sum(Profi,na.rm = T),n=n())
+Rdt.All_enar.res_sc
 
-ggplot(Rdt.All_enar.res_sc,aes(x =scena1,y=RDT))+
-  geom_point()+
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-     panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="Scenario",y="Net yield (kg/ha)")
-
-```
-
-## ordre croissant
-
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
+# Reorganize and display according to the scenario number
 All_enar.res_sc_ord <- All_enar.res_sc %>%
   group_by(scenario, scena1) %>%
   summarise(
@@ -601,73 +594,18 @@ All_enar.res_sc_ord <- All_enar.res_sc %>%
   arrange(scena1_num)
 
 
-ggplot(All_enar.res_sc_ord,aes(x =scena1,y=RDT))+
-  geom_point()+
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-     panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="Scenario",y="Net yield (kg/ha)")
-```
-
-
-
-## Ordre 1-> 3876 
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
-All_enar.res_sc_ord <- All_enar.res_sc_ord %>%
-  mutate(scena1_num = factor(scena1_num, levels = as.character(1:3876)))
-
-ggplot(All_enar.res_sc_ord,aes(x =scena1_num,y=RDT))+
-  geom_point()+
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-     panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="Scenario",y="Net yield (kg/ha)")
-```
-
-
-
-
-## Summary
-
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
 summary_stats <- All_enar.res_sc_ord %>%
   summarise(
     RDT_min = min(RDT, na.rm = TRUE),
     RDT_max = max(RDT, na.rm = TRUE),
     RDT_mean = mean(RDT, na.rm = TRUE),
     RDT_sd = sd(RDT, na.rm = TRUE),
-    
+
     FCI_min = min(FCI, na.rm = TRUE),
     FCI_max = max(FCI, na.rm = TRUE),
     FCI_mean = mean(FCI, na.rm = TRUE),
     FCI_sd = sd(FCI, na.rm = TRUE),
-    
+
     Profit_min = min(Profitability, na.rm = TRUE),
     Profit_max = max(Profitability, na.rm = TRUE),
     Profit_mean = mean(Profitability, na.rm = TRUE),
@@ -678,34 +616,74 @@ summary_stats
 
 
 
+### Summary
+
+```{r,echo=FALSE,warning = FALSE,message = FALSE,fig.width=7,fig.height=2}
+library(dplyr)
+
+# Filtrer les groupes et calculer les statistiques
+data_EEAll1 <- All_enar.res_sc %>%
+  filter(Group %in% c("Roach_juv","Tench_juv","MIB", "Zooplankton", "Phytoplankton", "Detritus", "Feed")) %>%
+  group_by(Group) %>%
+  summarise(
+    Minimum = min(EE, na.rm = TRUE),
+    Maximum = max(EE, na.rm = TRUE),
+    Moyenne = mean(EE, na.rm = TRUE),
+    CV = sd(EE, na.rm = TRUE) / mean(EE, na.rm = TRUE)
+  )
+data_EEAll1
+```
 
 
-## Profitability 
+
+## Net yield
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
-ggplot(Rdt.All_enar.res_sc,aes(x =scena1,y=Profitability))+
+library(tidyverse)
+Rdt.All_enar.res_sc=All_enar.res_sc%>%group_by(scenario,scena1)%>% summarise(RDT=sum(Rdt.net,na.rm = T),FCI=mean(FCI),Profitability=sum(Profi,na.rm = T),n=n())
+
+
+## # Reorganize and display according to the scenario number
+
+All_enar.res_sc_ord <- All_enar.res_sc %>%
+  group_by(scenario, scena1) %>%
+  summarise(
+    RDT = sum(Rdt.net, na.rm = TRUE),
+    FCI = mean(FCI),
+    Profitability = sum(Profi, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(scena1_num = as.numeric(gsub("\\D", "", scena1))) %>%  # extrait les chiffres
+  arrange(scena1_num)
+
+
+## Ordre 1-> 3876 
+
+All_enar.res_sc_ord <- All_enar.res_sc_ord %>%
+  mutate(scena1_num = factor(scena1_num, levels = as.character(1:3876)))
+
+ggplot(All_enar.res_sc_ord,aes(x =scena1_num,y=RDT))+
   geom_point()+
   theme_bw() +
   theme(
     axis.line = element_line(colour = "black"),
     legend.key = element_blank(),
     panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-     panel.grid = element_blank(),
+    panel.grid = element_blank(),
     panel.spacing = unit(0.1, "lines"),
     strip.text = element_text(color="black",size = 12),
     axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
     axis.title = element_text(color="black",size = 16,face="bold"),
     legend.title = element_text(color="black",size = 14,face="bold"),
     legend.text = element_text(color="black",size = 13,face="bold")
       )+
-  labs(x="Scenario",y="Profitability ($/ha)")
+  labs(x="Scenario",y="Net yield (kg/ha)")
 ```
 
 
 
-## Ordre 1-> 3876 
+
+## Profitability 
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 
@@ -734,31 +712,6 @@ ggplot(All_enar.res_sc_ord,aes(x =scena1_num,y=Profitability))+
 ## MIB
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
-ggplot(All_enar.res_sc[All_enar.res_sc$Group=="MIB",],aes(x =scena1,y=EE))+
-  geom_point()+
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-     panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="Scenario",y="EE_Macroinvertebrate")
-```
-
-
-
-## Ordre 1-> 3876
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
 All_enar.res_sc <- All_enar.res_sc %>%
   mutate(scena2 = factor(ceiling(row_number() / 9), levels = 1:3876))
 ggplot(All_enar.res_sc[All_enar.res_sc$Group=="MIB",],aes(x =scena2,y=EE))+
@@ -768,13 +721,10 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="MIB",],aes(x =scena2,y=EE))+
     axis.line = element_line(colour = "black"),
     legend.key = element_blank(),
     panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
      panel.grid = element_blank(),
     panel.spacing = unit(0.1, "lines"),
     strip.text = element_text(color="black",size = 12),
     axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
     axis.title = element_text(color="black",size = 16,face="bold"),
     legend.title = element_text(color="black",size = 14,face="bold"),
     legend.text = element_text(color="black",size = 13,face="bold")
@@ -785,31 +735,7 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="MIB",],aes(x =scena2,y=EE))+
 
 
 ## Zooplankton
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
-ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Zooplancton",],aes(x =scena1,y=EE))+
-  geom_point()+
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-     panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="Scenario",y="EE_Zooplancton")
 
-```
-
-
-## Ordre 1-> 3876 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Zooplancton",],aes(x =scena2,y=EE))+
   geom_point()+
@@ -818,9 +744,7 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Zooplancton",],aes(x =scena2,y=EE
     axis.line = element_line(colour = "black"),
     legend.key = element_blank(),
     panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-     panel.grid = element_blank(),
+    panel.grid = element_blank(),
     panel.spacing = unit(0.1, "lines"),
     strip.text = element_text(color="black",size = 12),
     axis.text = element_text(color="black",size = 13),
@@ -833,32 +757,9 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Zooplancton",],aes(x =scena2,y=EE
 
 ```
 
+
 ## Phytoplankton
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
-ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Phytoplancton",],aes(x =scena1,y=EE))+
-  geom_point()+
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-     panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="Scenario",y="EE_Phytoplancton")
 
-```
-
-
-## Ordre 1-> 18424 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Phytoplancton",],aes(x =scena2,y=EE))+
   geom_point()+
@@ -881,32 +782,10 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Phytoplancton",],aes(x =scena2,y=
   labs(x="Scenario",y="EE_Phytoplancton")
 
 ```
+
+
 ## Detritus
 
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
-ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Detritus",],aes(x =scena1,y=EE))+
-  geom_point()+
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-     panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="Scenario",y="EE_Detritus")
-
-```
-
-## Ordre 1-> 3876
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Detritus",],aes(x =scena2,y=EE))+
   geom_point()+
@@ -933,31 +812,7 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Detritus",],aes(x =scena2,y=EE))+
 
 ## Feed
 
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
-ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Feed",],aes(x =scena1,y=EE))+
-  geom_point()+
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-     panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="Scenario",y="EE_Feed")
 
-```
-
-
-## Ordre 1-> 18424 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Feed",],aes(x =scena2,y=EE))+
   geom_point()+
@@ -966,13 +821,10 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Feed",],aes(x =scena2,y=EE))+
     axis.line = element_line(colour = "black"),
     legend.key = element_blank(),
     panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-     panel.grid = element_blank(),
+   panel.grid = element_blank(),
     panel.spacing = unit(0.1, "lines"),
     strip.text = element_text(color="black",size = 12),
     axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
     axis.title = element_text(color="black",size = 16,face="bold"),
     legend.title = element_text(color="black",size = 14,face="bold"),
     legend.text = element_text(color="black",size = 13,face="bold")
@@ -986,59 +838,6 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Feed",],aes(x =scena2,y=EE))+
 
 ## FCI
 
-
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
-ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Grass_carp",],aes(x =scena1,y=FCI))+
-  geom_point()+
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-     panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="Scenario",y="FCI")
-
-```
-
-
-
-### Color by Striped_catfish percentage at stocking
-
-
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
-ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Grass_carp",],aes(x =scena1,y=FCI))+
-  geom_point(aes(colour=prc_scn))+
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-     panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="Scenario",y="FCI", col="% Grass_carp")
-
-```
-
-## Ordre 1-> 3876
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Grass_carp",],aes(x =scena2,y=FCI))+
   geom_point()+
@@ -1047,14 +846,11 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Grass_carp",],aes(x =scena2,y=FCI
     axis.line = element_line(colour = "black"),
     legend.key = element_blank(),
     panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
      panel.grid = element_blank(),
     panel.spacing = unit(0.1, "lines"),
     strip.text = element_text(color="black",size = 12),
     axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
+     axis.title = element_text(color="black",size = 16,face="bold"),
     legend.title = element_text(color="black",size = 14,face="bold"),
     legend.text = element_text(color="black",size = 13,face="bold")
       )+
@@ -1066,7 +862,7 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Grass_carp",],aes(x =scena2,y=FCI
 
 ## EE
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
-ggplot(All_enar.res_sc[All_enar.res_sc$Group%in%c("MIB","Zooplancton","Phytoplancton","Feed","Detritus"),], aes(x=EE, y=Group)) +
+ggplot(All_enar.res_sc[All_enar.res_sc$Group%in%c("Roach_juv","Tench_juv","MIB","Zooplancton","Phytoplancton","Feed","Detritus"),], aes(x=EE, y=Group)) +
   geom_boxplot() +
   scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 0.5))+
   stat_boxplot(geom="errorbar",width=0.5, coef=NULL)+
@@ -1089,288 +885,12 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group%in%c("MIB","Zooplancton","Phytoplan
       )+
   labs(y="Group",x="Ecotrophic efficiency")
 ```
-## en Fr
-
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
-
-library(ggplot2)
-library(dplyr)
-library(patchwork)
-
-# Données Feed
-data_EEfeed <- All_enar.res_sc %>%
-  filter(Group == "Feed") %>%
-  mutate(Group_fr = recode(Group,
-                           "Feed" = "Aliment"))
-
-# Données autres groupes avec noms en français et ordre forcé
-data_EEothers <- All_enar.res_sc %>%
-  filter(Group %in% c("MIB", "Zooplancton", "Phytoplancton", "Detritus")) %>%
-  mutate(Group_fr = recode(Group,
-                           "MIB" = "Macroinvertébrés",
-                           "Zooplancton" = "Zooplancton",
-                           "Phytoplancton" = "Phytoplancton",
-                           "Detritus" = "Détritus"),
-         Group_fr = factor(Group_fr, levels = c("Détritus",  "Phytoplancton","Zooplancton", "Macroinvertébrés")))
-
-# Plot Feed
-p1 <- ggplot(data_EEfeed, aes(x = EE, y = Group_fr)) +
-  geom_boxplot(fill = "grey80") +
-  stat_boxplot(geom = "errorbar", width = 0.5, coef = NULL) +
-  stat_summary(fun = mean, geom = "point", shape = 20, size = 2, color = "red") +
-  scale_x_continuous(limits = c(1, 18), breaks = seq(1, 18, by = 2)) +
-  theme_bw() +
-  labs(y = "", x = "") +
-  theme(
-    axis.text = element_text(color="black",size = 14, face = "bold"),
-    axis.title = element_text(color="black",size = 14, face = "bold"),
-    plot.title = element_text(color="black",size = 14, face = "bold")
-  )
-
-# Plot autres groupes
-p2 <- ggplot(data_EEothers, aes(x = EE, y = Group_fr)) +
-  geom_boxplot(fill = "grey80") +
-  stat_boxplot(geom = "errorbar", width = 0.5, coef = NULL) +
-  stat_summary(fun = mean, geom = "point", shape = 20, size = 2, color = "red") +
-  scale_x_continuous(limits = c(0, 1.2), breaks = seq(0, 1, by = 0.2)) +
-  theme_bw() +
-  labs(y = "", x = "Efficiences écotrophiques") +
-  theme(
-    axis.text = element_text(color="black",size = 14, face = "bold"),
-    axis.title = element_text(color="black",size = 14, face = "bold"),
-    plot.title = element_text(color="black",size = 14, face = "bold")
-  )
-
-# Affichage combiné
-p1 / p2 + plot_layout(heights = c(1, 2))
 
 
 
-```
+# Screening scenario 
 
-
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
-summary_EE_by_Group <- All_enar.res_sc %>%
-  filter(Group %in% c("Roach_juv","Tench_juv","MIB", "Zooplancton", "Phytoplancton", "Feed", "Detritus")) %>%
-  group_by(Group) %>%
-  summarise(
-    EE_min = min(EE, na.rm = TRUE),
-    EE_max = max(EE, na.rm = TRUE),
-    EE_mean = mean(EE, na.rm = TRUE),
-    EE_sd = sd(EE, na.rm = TRUE),
-    n = n(),
-    .groups = "drop"
-  )
-```
-
-
-
-
-## EE without feed
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
- ggplot(All_enar.res_sc[All_enar.res_sc$Group%in%c("MIB","Zooplancton","Phytoplancton","Detritus"),], aes(x=EE, y=Group)) +
-  geom_boxplot() +
-  # scale_x_continuous(breaks = seq(0, 1.3, by = 0.1))+
-  stat_boxplot(geom="errorbar",width=0.5, coef=NULL)+
-  stat_summary(fun.y=mean, geom="point", shape=20, size=2, color="red", fill="red") +
-  theme_bw() +
-  theme(
-   axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-    panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(y="Group",x="Ecotrophic efficiency")
-
-
-```
-
-
-## RDT
-```{r,echo=FALSE,warning = FALSE,message = FALSE,fig.width=1.5,fig.height=3}
- ggplot(Rdt.All_enar.res_sc, aes(y=RDT, x="")) +
-  geom_boxplot() +
-  stat_boxplot(geom="errorbar",width=0.5, coef=NULL)+
-  stat_summary(fun.y=mean, geom="point", shape=20, size=2, color="red", fill="red") +
-  theme_bw() +
-  theme(
-   axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-    panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 14),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="",y="Net yield (kg/ha)")
-
-
-```
-
-## en Fr
-
-```{r,echo=FALSE,warning = FALSE,message = FALSE,fig.width=1.5,fig.height=3}
- ggplot(Rdt.All_enar.res_sc, aes(y=RDT, x="")) +
-  geom_boxplot(fill = "grey80") +
-  stat_boxplot(geom="errorbar",width=0.5, coef=NULL)+
-   scale_y_continuous(limits = c(1300, 5500), breaks = seq(1000, 6000, by = 500)) +
-  stat_summary(fun.y=mean, geom="point", shape=20, size=2, color="red", fill="red") +
-  theme_bw() +
-  theme(
-   axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-    panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 14,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="",y="Rendement net (kg/ha)")
-
-
-```
-
-
-
-## Profitability
-```{r,echo=FALSE,warning = FALSE,message = FALSE,fig.width=1.5,fig.height=3}
- ggplot(Rdt.All_enar.res_sc, aes(y=Profitability, x="")) +
-  geom_boxplot(fill = "grey80") +
-  stat_boxplot(geom="errorbar",width=0.5, coef=NULL)+
-  stat_summary(fun.y=mean, geom="point", shape=20, size=2, color="red", fill="red") +
-  theme_bw() +
-  theme(
-   axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-    panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="",y="Profitability ($/ha)")
-
-
-```
-
-## en Fr
-
-```{r,echo=FALSE,warning = FALSE,message = FALSE,fig.width=1.5,fig.height=4}
- ggplot(Rdt.All_enar.res_sc, aes(y=Profitability , x="")) +
-  geom_boxplot(fill = "grey80") +
-  stat_boxplot(geom="errorbar",width=0.5, coef=NULL)+
-  stat_summary(fun.y=mean, geom="point", shape=20, size=2, color="red", fill="red") +
-  theme_bw() +
-  theme(
-   axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-    panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 14,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="",y="Rentabilité ($/ha)")
-
-
-```
-
-
-
-
-## FCI
-```{r,echo=FALSE,warning = FALSE,message = FALSE,fig.width=1.5,fig.height=3}
- ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Grass_carp",], aes(y=FCI*100, x="")) +
-  geom_boxplot() +
-  stat_boxplot(geom="errorbar",width=0.5, coef=NULL)+
-  stat_summary(fun.y=mean, geom="point", shape=20, size=2, color="red", fill="red") +
-  theme_bw() +
-  theme(
-   axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-    panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="",y="Finn cycling index (%)")
-
-
-```
-
-## en Fr
-
-```{r,echo=FALSE,warning = FALSE,message = FALSE,fig.width=1.5,fig.height=4}
- ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Grass_carp",], aes(y=FCI*100, x="")) +
-  geom_boxplot(fill = "grey80") +
-  stat_boxplot(geom="errorbar",width=0.5, coef=NULL)+
-   scale_y_continuous(limits = c(14.5, 17), breaks = seq(14.5, 17, by = 0.5)) +
-  stat_summary(fun.y=mean, geom="point", shape=20, size=2, color="red", fill="red") +
-  theme_bw() +
-  theme(
-   axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-    panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
-    axis.title = element_text(color="black",size = 14,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="",y="Indice de cycle de Finn (%)")
-
-
-```
-
-
-
-
-# Screening scenario
+## Select the fish species with performance indicators (Ecotrophic efficiency, net yield, Finn Cycling Index)
 
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
@@ -1385,10 +905,7 @@ slct.scn<- slct.scn %>%
          prc.Roach = Roach,
          prc.Tench=Tench)
 
-```
 
-
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
 # EE
 slct.EE= All_enar.res_sc[!All_enar.res_sc$Group%in%c("Grass_carp","Carp","Pike_perch","Roach","Tench"),c(1,7,46,49)] %>% pivot_wider(names_from="Group", values_from="EE")
 
@@ -1401,16 +918,10 @@ slct.EE<- slct.EE %>%
          EE.Macrophyte=Macrophyte,
          EE.Phytoplancton=Phytoplancton,
          EE.Detritus=Detritus)
-```
 
-
-```{r,include=FALSE,warning = FALSE,message = FALSE}
 # Rdt et FCI
 Rdt.All_enar.res_sc
-```
 
-
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
 # Merge
 merge.All_enar.res_sc=merge(slct.scn,slct.EE)
 merge.All_enar.res_sc=merge(merge.All_enar.res_sc,Rdt.All_enar.res_sc)
@@ -1418,7 +929,8 @@ merge.All_enar.res_sc=merge(merge.All_enar.res_sc,Rdt.All_enar.res_sc)
 ```
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
-write.csv(merge.All_enar.res_sc,"merge.All_enar.res_Simul4.csv")
+write.csv(merge.All_enar.res_sc,"merge.All_enar.res_Simul.csv")
+merge.All_enar.res_sc
 ```
 
 

@@ -7,9 +7,10 @@ output:
   word_document: default
   pdf_document: default
 
-knit: (function(input_file, encoding) {
-  rmarkdown::render(input_file, encoding = encoding, output_format = "all")
-})
+knit: |
+  (function(inputFile, encoding) {
+    rmarkdown::render(inputFile, encoding = encoding, output_format = "all")
+  })
 ---
 
 # Fish species selected
@@ -381,7 +382,7 @@ REco.params$diet[, MIB                   := c(NA,NA,NA,NA, 0.10, 0.20, 0.20, 0.0
 REco.params$diet[, Zooplankton           := c(NA,NA,NA,NA, 0.00, 0.10, 0.60, 0.00,0.30,NA)]
 
 REco <- rpath(REco.params, eco.name = 'R Ecosystem')
-
+## [9 => modify based on the total number of functional groups]
 results_list[[i]]=cbind(data.frame(REco[c(4:13,15)]),data.frame(Scena = rep(scenarios[i], 9)))
 }
 
@@ -516,7 +517,7 @@ print(temps_ecoule)
 
 #print result
 All_enar.res_sc
-# write.csv(All_enar.res_sc,"All_enar_res_simul.csv")
+write.csv(All_enar.res_sc,"All_enar_res_simul.csv")
 ```
 
 
@@ -673,6 +674,8 @@ ggplot(All_enar.res_sc_ord,aes(x =scena1_num,y=Profitability))+
       )+
   labs(x="Scenarios: 1 \u2192 18424",y="Profitability ($/ha)")
 ```
+
+
 ## Finn cycling index (FCI)
 
 
@@ -896,7 +899,7 @@ merge.All_enar.res_sc=merge(merge.All_enar.res_sc,Rdt.All_enar.res_sc)
 
 # print result
 
-# write.csv(merge.All_enar.res_sc,"merge.All_enar.res_simul.csv")
+write.csv(merge.All_enar.res_sc,"merge.All_enar.res_simul.csv")
 merge.All_enar.res_sc
 ```
 
