@@ -1,12 +1,13 @@
 ---
-title: "Simulation scenarios (Polyculture of Grass Carp *Ctenopharyngodon idella*)"
+title: "Simulation scenarios (Polyculture of striped catfish *Pangasianodon hypophthalmus*)"
 author: "Ralien R.Purco"
 date: "`r Sys.Date()`"
 output:
   html_document: default
   word_document: default
   pdf_document: default
-  
+
+
 knit: |
   (function(inputFile, encoding) {
     rmarkdown::render(inputFile, encoding = encoding, output_format = "all")
@@ -15,11 +16,11 @@ knit: |
 
 # Fish species selected
 
-- Grass Carp (*Ctenopharyngodon idella*) 
-- Common Carp (*Cyprinus carpio*) 
-- Pikeperch (*Sander lucioperca*)  
-- Roach (*Rutilus rutilus*)  
-- Tench (*Tinca tinca*) 
+- Striped catfish (*Pangasianodon hypophthalmus*)
+- Silver Carp (*Hypophthalmichthys molitrix*)
+- *Clarias macrocephalus*
+- Common carp (*Cyprinus carpio*)
+
 
 # Zootechnical performance for each fish species (Use and refer to the  template "Stocking_Hypothesis_ad")
 
@@ -53,15 +54,11 @@ knit: |
 - Detritus input (DetInput)
 
 
-# Biomass of stocking: 153 kg/ha (7650g for 500m²)[insert value]
+# Biomass of stocking: 600 kg/ha (6000g for 100m²)[insert value]
 
 
-# Pond area: 500m² [insert value]
+# Pond area: 100m² [insert value]
 
-# Assessment of juvenile production from the fry of the roah and tench adult (Use and refer to the  template "Stocking_Hypothesis_juv")
-- Stocking total biomass of all fish (Stocking_Tot): [insert value]
-- Unit price (Price.U): [insert value]
-- Consumption/Biomass ratio (C/B): [insert value]
 
 # Assessment of available resources (Use and refer to the  template "Stocking_Hypothesis_Rgroup")
 
@@ -69,14 +66,16 @@ knit: |
 - Production/Biomass ratio (P/B): [insert value]
 - Consumption/Biomass ratio (C/B): [insert value]
 
-NB: A separate file was used for feed, and it was fixed for each scenario: 44 485 g for the entire period per pond.
-
+NB: Separate file for feed if it is not fixed for each scenario (e.g., 3% of biomass of striped catfish)
 
 
 
 # Define scenarios
 
-```{r,echo=T,warning = FALSE,message = FALSE}
+1 Scenario = 1 Fish combinations with different percentages 
+
+```{r,echo=TRUE,warning = FALSE,message = FALSE}
+
 # remove previously loaded items from the current environment and remove previous graphics.
 rm(list=ls())
 graphics.off()
@@ -84,11 +83,11 @@ graphics.off()
 # Install and load the package to generate the combinations
 library(gtools)
 
-# Define the possible percentages (from 5 to 95 in steps of 5) => [Modify the values according to the chosen percentage steps]
-percentages <- seq(5, 95, by = 5)
-
-# Generate all possible combinations of percentages => [A, B, C, D, E correspond to the 5 selected species; modify this according to the number of species]
-combinations <- expand.grid(A = percentages, B = percentages, C = percentages, D = percentages,E = percentages)
+# Define the possible percentages (from 2 to 98 in steps of 2) => [Modify the values according to the chosen percentage steps]
+percentages <- seq(2, 98, by = 2)
+percentages 
+# Generate all possible combinations of percentages => [A, B, C, D correspond to the 4 selected species; modify this according to the number of species]
+combinations <- expand.grid(A = percentages, B = percentages, C = percentages, D = percentages) 
 
 # Filter the combinations for those whose sum is equal to 100
 valid_combinations <- combinations[rowSums(combinations) == 100, ]
@@ -96,14 +95,14 @@ valid_combinations <- combinations[rowSums(combinations) == 100, ]
 
 valid_combinations <-as.data.frame(valid_combinations)
 
-# Add a scenario column
 # Add a scenario column (Add a 'scenario' column with unique identifiers 'scenario1', 'scenario2', ... by generating a sequence from 1 to the number of rows in valid_combinations)
-valid_combinations$scenario <- paste0("scenario", seq_len(nrow(valid_combinations)),sep="")
+valid_combinations$scenario <- paste0("scenario", seq_len(nrow(valid_combinations)),sep="") 
 
 
 library(tidyverse)
 
-valid_combinations=valid_combinations %>%pivot_longer(cols=c(1:5),names_to = "sp_scn", values_to = "prc_scn") # 5 number of species
+# Reshapes the data from wide to long format
+valid_combinations=valid_combinations %>%pivot_longer(cols=c(1:4),names_to = "sp_scn", values_to = "prc_scn")
 
 data.valid_combinations=as.data.frame(valid_combinations)
 
@@ -124,7 +123,7 @@ list_comb=list_combinations
 # Add data
 
 
-```{r,echo=T,warning = FALSE,message = FALSE}
+```{r,echo=TRUE,warning = FALSE,message = FALSE}
 # define list of packages in vector
 package<-c("readxl")
 
@@ -135,94 +134,59 @@ instal<-function(x){
 }}
 instal(package) # load list of packages in vector package
 
-
 # set working directory
-setwd("P:\\Thèse Purco RALIEN\\Rpath_fork\\Rpath_fork\\Readme\\fish_reprod_feed")
+
+setwd("P:\\Thèse Purco RALIEN\\Rpath_fork\\Rpath_fork\\Readme\\fish_feed")
 
 # Import data
-data_ini.ad<-read_excel("Stocking_Hypothesis_ad.xlsx",sheet = 1)
+
+data_ini.ad <-read_excel("Stocking_Hypothesis_ad.xlsx",sheet = 1)
 data_ini.Feed<-read_excel("Stocking_Hypothesis_Feed.xlsx",sheet = 1)
-data_ini.juv<-read_excel("Stocking_Hypothesis_juv.xlsx",sheet = 1)
 data_ini.Rgroup<-read_excel("Stocking_Hypothesis_Rgroup.xlsx",sheet = 1)
 
-# add scenario + data adult
+
+#add scenario + fish data initial adult
 list_comb.d=list()
 for (i in 1:length(scenarios)) {
  list_comb.d[[i]]=cbind(data_ini.ad,list_comb[[i]])
 }
 
-# add scenario + data juv
-for (i in 1:length(scenarios)) {
- list_comb.d[[i]]=rbind(list_comb.d[[i]],data_ini.juv)
-}
 
 
 # Calcul
 
 
 for (i in 1:length(scenarios)) {
-  
+
 
 # For adult group
-  
-## Calcul initial biomass by percentage in sceanrio (Stocking total fix)
-list_comb.d[[i]]$WT_Stk=list_comb.d[[i]]$prc_scn/100*list_comb.d[[i]]$Stocking_Tot 
+
+## Calcul initial biomass by percentage in scenario (Stocking total fix)
+list_comb.d[[i]]$WT_Stk=list_comb.d[[i]]$prc_scn/100*list_comb.d[[i]]$Stocking_Tot
 
 ## Calcul initial number of species
-list_comb.d[[i]]$Nb_Stk=list_comb.d[[i]]$WT_Stk/list_comb.d[[i]]$Wi_Stk 
+list_comb.d[[i]]$Nb_Stk=list_comb.d[[i]]$WT_Stk/list_comb.d[[i]]$Wi_Stk
 
-## Calcul final Weight mean by SGR and duration 
+## Calcul final Weight mean by SGR and duration
 list_comb.d[[i]]$Wf_F=list_comb.d[[i]]$Wi_Stk*exp((list_comb.d[[i]]$SGR*list_comb.d[[i]]$Duration)/100)
 
 ## Calcul final number by mortality rate
-list_comb.d[[i]]$Nb_F=(1-list_comb.d[[i]]$Mortality/100)*list_comb.d[[i]]$Nb_Stk 
+list_comb.d[[i]]$Nb_F=(1-list_comb.d[[i]]$Mortality/100)*list_comb.d[[i]]$Nb_Stk
 
 ## Calcul final biomass
-list_comb.d[[i]]$WT_F=list_comb.d[[i]]$Nb_F*list_comb.d[[i]]$Wf_F 
+list_comb.d[[i]]$WT_F=list_comb.d[[i]]$Nb_F*list_comb.d[[i]]$Wf_F
+
+## Calcul final percentage by species
+list_comb.d[[i]]$Prc_F=list_comb.d[[i]]$WT_F/sum(list_comb.d[[i]]$WT_F)*100
+
+## Yield net kg/ha (by pond surface 0.01 ha) => [ Modify the 0.01 values based on the pond surface area]
+list_comb.d[[i]]$Rdt.net=((list_comb.d[[i]]$WT_F-list_comb.d[[i]]$WT_Stk)/1000)/0.01
 
 
 
-# For juvenil group
+# Add economic value( Calcul profitability by species)
+list_comb.d[[i]]$Profi=list_comb.d[[i]]$Rdt.net*list_comb.d[[i]]$Price.U
 
-## Fix initial weight of Roach_juv 
-### [[6]=> modify based on the Roach_juv row]
-### =5 => Initial weight (Wi_Stk): [insert value]
-list_comb.d[[i]]$Wf_F[6]=5 
-
-## Fix initial weight of Tench_juv 
-## [[7]=> modify based on the Tench_juv row]
-### =1.5 => Initial weight (Wi_Stk): [insert value]
-list_comb.d[[i]]$Wf_F[7]=1.5
-
-## Calcul final number of Roach-juv [6] by multiplying the number of adults by 1000 [4](fix including mortality ) 
-### minus 3 => -3: there must be at least 3 adults
-list_comb.d[[i]]$Nb_F[6]=(list_comb.d[[i]]$Nb_Stk[4]-3)*1000
-## Calcul final number of Tench-juv [7] by multiplying the number of adults by 1000 [5] (fix including mortality )
-### minus 3 => -3: there must be at least 3 adults
-list_comb.d[[i]]$Nb_F[7]=(list_comb.d[[i]]$Nb_Stk[5]-3)*1000
-
-## Calcul final biomass of Roach_juv
-list_comb.d[[i]]$WT_F[6]=list_comb.d[[i]]$Wf_F[6]*list_comb.d[[i]]$Nb_F[6]  
-## Calcul final biomass of Tench_juv
-list_comb.d[[i]]$WT_F[7]=list_comb.d[[i]]$Wf_F[7]*list_comb.d[[i]]$Nb_F[7]  
-
-
-# Calcul final percentage by species
-list_comb.d[[i]]$Prc_F=list_comb.d[[i]]$WT_F/sum(list_comb.d[[i]]$WT_F)*100 
-
-# Yield net kg/ha (by pond surface 0.05 ha)
-## => [ Modify the 500m² values based on the pond surface area]
-list_comb.d[[i]]$Rdt.net=((list_comb.d[[i]]$WT_F-list_comb.d[[i]]$WT_Stk)/1000)/0.05 
-
-
-
-# Add economic value
-# Calcul profitability by species
-list_comb.d[[i]]$Profi=list_comb.d[[i]]$Rdt.net*list_comb.d[[i]]$Price.U 
-
-# Duplicate the scenario name
-## [c(6:7)=> modify based on the juvenile row]
-list_comb.d[[i]]$scenario[c(6:7)]=list_comb.d[[i]]$scenario[1]
 
 
 # Calcul Z
@@ -232,40 +196,30 @@ list_comb.d[[i]]$Z=-(log(list_comb.d[[i]]$Nb_F/list_comb.d[[i]]$Nb_Stk))
 list_comb.d[[i]]$Nb.mean=(list_comb.d[[i]]$Nb_Stk-list_comb.d[[i]]$Nb_F)/list_comb.d[[i]]$Z
 
 # Calcul mean weight
-list_comb.d[[i]]$W.mean=(list_comb.d[[i]]$Wi_Stk+list_comb.d[[i]]$Wf_F)/2 
+list_comb.d[[i]]$W.mean=(list_comb.d[[i]]$Wi_Stk+list_comb.d[[i]]$Wf_F)/2
 
-
-# Calcul mean biomass
-## Calcul mean biomass for adult group
+# Calcul mean biomass for adult group
 list_comb.d[[i]]$B.g=list_comb.d[[i]]$Nb.mean*list_comb.d[[i]]$W.mean
 
-## Calcul mean biomass for juvenil group
-### Calcul mean biomass of Roach_juv 
-list_comb.d[[i]]$B.g[6]=list_comb.d[[i]]$WT_F[6]/2 
-### Calcul mean biomass of Tench_juv
-list_comb.d[[i]]$B.g[7]=list_comb.d[[i]]$WT_F[7]/2 
+# Calcul mean biomass in g/m2 (by pond surface 100m²)
+## => [ Modify the 100m² values based on the pond surface area]
+list_comb.d[[i]]$B.g.m2=list_comb.d[[i]]$B.g / 100
 
-# Calcul mean biomass in g/m2 (by pond surface 500m2)
-## => [ Modify the 500m² values based on the pond surface area]
-list_comb.d[[i]]$B.g.m2=list_comb.d[[i]]$B.g/500 
 
 # Calcul mean biomass in dry weight
 list_comb.d[[i]]$B_DW=list_comb.d[[i]]$B.g.m2*list_comb.d[[i]]$DW_rate
 
 
 # Calcul biomass accumulation
-list_comb.d[[i]]$BA.g=list_comb.d[[i]]$WT_F-list_comb.d[[i]]$WT_Stk 
+list_comb.d[[i]]$BA.g=list_comb.d[[i]]$WT_F-list_comb.d[[i]]$WT_Stk
 
-# Calcul P:B
-## Calcul P:B for adult group
+
+# Calcul P:B for adult group
 list_comb.d[[i]]$`P/B`=list_comb.d[[i]]$BA.g/list_comb.d[[i]]$B.g+list_comb.d[[i]]$Z
 
-## Calcul P:B for juv group
-list_comb.d[[i]]$`P/B`[6]=list_comb.d[[i]]$BA.g[6]/list_comb.d[[i]]$B.g[6]
-list_comb.d[[i]]$`P/B`[7]=list_comb.d[[i]]$BA.g[7]/list_comb.d[[i]]$B.g[7]
-
-# Calcul Biomass acc in g/m2 (by pond surface 500m2)
-list_comb.d[[i]]$Bacc.g.m2=list_comb.d[[i]]$BA.g/500 
+# Calcul Biomass acc in g/m2 (by pond surface 100m²)
+## => [ Modify the 100m² values based on the pond surface area]
+list_comb.d[[i]]$Bacc.g.m2=list_comb.d[[i]]$BA.g/100
 
 # Calcul Biomass accumulate in dry weight
 list_comb.d[[i]]$Baacc_DW=list_comb.d[[i]]$Bacc.g.m2*list_comb.d[[i]]$DW_rate
@@ -274,60 +228,68 @@ list_comb.d[[i]]$Baacc_DW=list_comb.d[[i]]$Bacc.g.m2*list_comb.d[[i]]$DW_rate
 
 
 
-#add scenario + data feed
-## [c(8:8)=> modify based on the feed row]
+# Add scenario + data feed
+## [c(5:5)=> modify based on the feed row]
+
 for (i in 1:length(scenarios)) {
  list_comb.d[[i]]=rbind(list_comb.d[[i]],data_ini.Feed)
- list_comb.d[[i]]$scenario[c(8:8)]=list_comb.d[[i]]$scenario[1] # [8] line for feed
+ list_comb.d[[i]]$scenario[c(5:5)]=list_comb.d[[i]]$scenario[1]
 }
 
+
+
 for (i in 1:length(scenarios)) {
+
 # For Feed group
-## Calcul biomass
-# #Calculate the biomass of feed : Total for each pond during all period 44 485g. Adjust this value to the surface area per m² by dividing by 500, then convert it to dry weight. Calculate the average by dividing by the duration.
-list_comb.d[[i]]$B_DW[8]=44485/500*list_comb.d[[i]]$DW_rate[8]/list_comb.d[[i]]$Duration[8] 
+## Calcul biomass => Calculate the biomass of feed by multiplying the initial number of striped catfish by 251 (factor including growth) [251 => insert value based on simulation]. Adjust this value to the surface area per m² by dividing by 100 [100m² => insert value based on the pond surface area], then convert it to dry weight. Calculate the average by dividing by the duration.
+## [[5]=> modify based on the feed row]
+list_comb.d[[i]]$B_DW[5]=list_comb.d[[i]]$Nb_Stk[1]*251/100*list_comb.d[[i]]$DW_rate[5]/list_comb.d[[i]]$Duration[5]
 
 ## Calcul DetInput
-# #Calculate the Detritus input of feed by multiplying the biomass of feed by the duration.
-list_comb.d[[i]]$DetInput[8]=list_comb.d[[i]]$B_DW[8]*list_comb.d[[i]]$Duration[8] 
+## Calculate the Detritus input of feed by multiplying the biomass of feed by the duration, then calculate the average by dividing by 2.
+## [[5]=> modify based on the feed row]
+list_comb.d[[i]]$DetInput[5]=list_comb.d[[i]]$B_DW[5]*list_comb.d[[i]]$Duration[5]/2
 
 }
 
 
-# Add economic value - feed value
-## Calculate the profitability by substracting the fish profitability by the feed value ( which obtained by multiplying the total of feed biomass 44 485g.Dividing by 1000 to have the value in kg. Adjust this value to the surface area per ha by dividing by 0.0500, then multiply it by the price of the feed )
 
 for (i in 1:length(scenarios)) {
-list_comb.d[[i]]$Profi[1]=list_comb.d[[i]]$Profi[1] - ((44485)/1000)/0.05*list_comb.d[[i]]$Price.U[8] 
+# Add economic value - feed value
+## Calculate the profitability by substracting the fish profitability by the feed value ( which obtained by multiplying the initial number of striped catfish by 251 (factor including growth) [251 => insert value based on simulation].Dividing by 1000 to have the value in kg. Adjust this value to the surface area per ha by dividing by 0.0100 [0.01 ha => insert value based on the pond surface area], then multiply it by the price of the feed 0.6) => [ Modify the 0.6 values based on the price of the feed]
+## [[1]=> modify based on the feed fish row]
+list_comb.d[[i]]$Profi[1]=list_comb.d[[i]]$Profi[1] - ((list_comb.d[[i]]$Nb_Stk[1]*251)/1000)/0.01*0.6
+
 }
+
 
 
 # Add resource group
-## [c(9:13)=> modify based on the resource available row]
+## [c(6:9)=> modify based on the resource available row]
 for (i in 1:length(scenarios)) {
  list_comb.d[[i]]=rbind(list_comb.d[[i]],data_ini.Rgroup)
- list_comb.d[[i]]$scenario[c(9:13)]=list_comb.d[[i]]$scenario[1]
+ list_comb.d[[i]]$scenario[c(6:9)]=list_comb.d[[i]]$scenario[1]
 }
 
 
 # Loop to reorganize the rows of each dataframe in the list list_comb.d (feed and detritus at the end )
 for (i in 1:length(list_comb.d)) {
-  
+
   # Extract the current dataframe
   df <- list_comb.d[[i]]
-  
-  # Check if the dataframe has at least 13 rows
-  if (nrow(df) >= 13) {
+
+  # Check if the dataframe has at least 8 rows
+  if (nrow(df) >= 8) {
     # Extract the 5th row
-    ligne_8 <- df[8, ]
-    
-    # Remove the 8th row from the original dataframe
-    df <- df[-8, ]
-    
-    # Insert the 8th row at the 8th position
-    df <- rbind(df[1:11, ], ligne_8, df[12:nrow(df), ])
+    ligne_5 <- df[5, ]
+
+    # Remove the 5th row from the original dataframe
+    df <- df[-5, ]
+
+    # Insert the 5th row at the 8th position
+    df <- rbind(df[1:7, ], ligne_5, df[8:nrow(df), ])
   }
-  
+
   # Update the dataframe in the list
   list_comb.d[[i]] <- df
 }
@@ -343,9 +305,7 @@ All_data=do.call(rbind.data.frame,list_comb.d.all)
 # Ecopath for all scenario
 
 
-
 # Install package
-# remove.packages("Rpath")
 # remotes::install_github('https://github.com/Purco/Rpath_fork.git')
 # remotes::install_github('https://github.com/Purco/enaR.git')
 
@@ -355,32 +315,28 @@ library(Rpath); library(data.table)
 
 temps_debut <- system.time({
 
-# start  
+# start
 results_list <- list()
 for (i in 1:length(scenarios)) {
 
 # Groups and types for each functional group
 ## => [Modify and reorder  the functional group according to "list_comb.d"]
-groups <- c('Grass_carp', 
-            'Carp', 
-            'Pike_perch', 
-            'Roach',
-            'Tench', 
-            'Roach_juv', 
-            'Tench_juv', 
-            'MIB', 
-            'Zooplancton',
-            'Macrophyte',
-            'Phytoplancton',
+groups <- c('Striped_catfish',
+            'Silver_Carp',
+            'Clarias_macrocephalus',
+            'Common_carp',
+            'MIB',
+            'Zooplankton',
+            'Phytoplankton',
             'Feed',
             'Detritus')
 
 ## => [Modify and reorder  the functional group according to "list_comb.d"]
 ## => [0 for consumer, 1 for primary production, 2 for detritus and feed]
-types  <- c(rep(0, 9), 1,1,2, 2)
+types  <- c(rep(0, 6), 1,2, 2)
 
-## [13 => modify based on the total number of functional groups]
-stgroups <- c(rep(0, 13))
+## [9 => modify based on the total number of functional groups]
+stgroups <- c(rep(0, 9))
 
 REco.params <- create.rpath.params(group = groups, type = types,stgroup=stgroups)
 
@@ -391,49 +347,43 @@ REco.params$model[, PB := All_data[All_data$scenario==scenarios[i],]$`P/B`]
 REco.params$model[, QB := All_data[All_data$scenario==scenarios[i],]$`C/B`]
 
 
-#Biomass accumulation 
+#Biomass accumulation
 ## [ => c(1:4) represents the fish groups;(0, 5) for other functional groups]
-REco.params$model[, BioAcc  := c(All_data[All_data$scenario==scenarios[i],]$Baacc_DW[c(1:5)],rep(0, 8))]
+REco.params$model[, BioAcc  := c(All_data[All_data$scenario==scenarios[i],]$Baacc_DW[c(1:4)],rep(0, 5))]
 
 # Unassimilated consumption
 ## [rep(0.2, 4) => for the fish groups;rep(0.4, 2) for MIB and Zoo; rep(0, 3) for other functional groups]
-REco.params$model[, Unassim := c(rep(0.2, 7), rep(0.4, 2), rep(0, 4))]
+REco.params$model[, Unassim := c(rep(0.2, 4), rep(0.4, 2), rep(0, 3))]
 
 # Detritus import
-#add value from feed
+## Add value from feed
 REco.params$model[, DetInput := All_data[All_data$scenario==scenarios[i],]$DetInput]
 
 #Detrital Fate
-REco.params$model[, Detritus := c(rep(1, 11), rep(1, 2))]
+REco.params$model[, Detritus := c(rep(1, 7), rep(1, 2))]
 
 ## Add second detrital Fate for feed
-REco.params$model[, Feed := c(rep(0, 11),1,0)] # Add second det (PR)
+REco.params$model[, Feed := c(rep(0, 7),1,0)]
+
 
 
 # Diet
 
-REco.params$diet[, Grass_carp        := c(NA,NA,NA,NA,NA,0.000,0.000,0.040,0.120,0.190,0.210,0.250,0.200,NA)]
- 
-REco.params$diet[, Carp              := c(NA,NA,NA,NA,NA, 0.000,0.000,0.020,0.050,0.020,0.030,0.850,0.030,NA)]
-                 
-REco.params$diet[, Pike_perch        := c(NA,NA,NA,NA,NA, 0.060,0.060,0.480,0.200,0.000,0.000,0.200,0.000,NA)]
- 
-REco.params$diet[, Roach             := c(NA,NA,NA,NA,NA, 0.060,0.070,0.110,0.120,0.100,0.170,0.250,0.120,NA)]
+REco.params$diet[, Striped_catfish       := c(NA,NA,NA,NA, 0.015, 0.025, 0.005, 0.95,0.005,NA)]
 
-REco.params$diet[, Tench             := c(NA,NA,NA,NA,NA, 0.060,0.060,0.110,0.140,0.120,0.140,0.250,0.130,NA)]
+REco.params$diet[, Silver_Carp           := c(NA,NA,NA,NA, 0.00, 0.10, 0.80, 0.00,0.10,NA)]
 
-REco.params$diet[, Roach_juv         := c(NA,NA,NA,NA,NA,0.000,0.000,0.200,0.250,0.200,0.200,0.000,0.150,NA)]
+REco.params$diet[, Clarias_macrocephalus := c(NA,NA,NA,NA, 0.45, 0.35, 0.10, 0.00,0.10,NA)]
 
-REco.params$diet[, Tench_juv         := c(NA,NA,NA,NA,NA,0.000,0.000,0.200,0.250,0.200,0.200,0.000,0.150,NA)]
+REco.params$diet[, Common_carp           := c(NA,NA,NA,NA, 0.20, 0.20, 0.00, 0.40,0.20,NA)]
 
-REco.params$diet[, MIB               := c(NA,NA,NA,NA,NA,0.000,0.000,0.000,0.090,0.190,0.320,0.150,0.250,NA)]
+REco.params$diet[, MIB                   := c(NA,NA,NA,NA, 0.10, 0.20, 0.20, 0.00,0.50,NA)]
 
-REco.params$diet[, Zooplancton       := c(NA,NA,NA,NA,NA,0.000,0.000,0.000,0.590,0.410,0.000,0.000,0.000,NA)]
-
+REco.params$diet[, Zooplankton           := c(NA,NA,NA,NA, 0.00, 0.10, 0.60, 0.00,0.30,NA)]
 
 REco <- rpath(REco.params, eco.name = 'R Ecosystem')
-## [13 => modify based on the total number of functional groups]
-results_list[[i]]=cbind(data.frame(REco[c(4:13,15)]),data.frame(Scena = rep(scenarios[i], 13)))
+## [9 => modify based on the total number of functional groups]
+results_list[[i]]=cbind(data.frame(REco[c(4:13,15)]),data.frame(Scena = rep(scenarios[i], 9)))
 }
 
 All_results=do.call(rbind.data.frame,results_list)
@@ -447,17 +397,16 @@ print(temps_ecoule)
 
 
 
-
 # EnaR
 
 
 
 temps_debut <- system.time({
 
-# start  
+# start
 res.enaR_list <- list()
 for (k in 1:length(scenarios)) {
-  
+
 # Steps of Rpath to enaR (network) conversion:
 # Set up: pull in group names, count number of living vs. non-living groups
 groups <- as.vector(REco$Group)
@@ -485,9 +434,13 @@ rownames(QQ)<-groups[1:(nliving+ndead)]#change (PR)
 M0<-results_list[[k]]$PB*(1-results_list[[k]]$EE)
 
 Detritus<-(M0*results_list[[k]]$Biomass+results_list[[k]]$QB*results_list[[k]]$Biomass*results_list[[k]]$Unassim)*REco$DetFate[,ndead]#change (PR)
+
+## Add if there is feed
 Feed<-(M0*REco$Biomass+REco$QB*REco$Biomass*REco$Unassim)*REco$DetFate[,1]#Add (PR)
 
 Detritus[(nliving+ndead)]<-0 #change (PR)
+
+## Add if there is feed
 Feed[(nliving+1)]<-0 #Add (PR)
 
 QQ<-cbind(QQ,Feed,Detritus)#change (PR)
@@ -496,7 +449,9 @@ QQ<-cbind(QQ,Feed,Detritus)#change (PR)
 Export<-(ifelse(results_list[[k]]$BA>0,results_list[[k]]$BA,0))
 Export<-Export[1:(nliving+ndead)]
 
-
+# for (i in 1:ndead){
+#   Export[nliving+i]<-REco$PB[(nliving+i)]*REco$Biomass[(nliving+i)]
+# } # Modified
 
 for (i in 1:ndead){
   Export[nliving+i]<-M0[(nliving+i)]*results_list[[k]]$Biomass[(nliving+i)]-sum(Export[1:nliving])
@@ -513,20 +468,21 @@ Resp[(nliving+ndead):(nliving+ndead)]<-0 #change (PR)
 
 # Estimate respiration of primary producers
 
-
 gross<-0
 
-## [c(10:11) =>  c(10:11) represents the primary production row; adjust this column according to the corresponding row in the data]
-Resp[c(10:11)]<-0 #change (PR)
+## [c(7) =>  c(7) represents the primary production row; adjust this column according to the corresponding row in the data]
+Resp[c(7)]<-0
 
 # Calculate imports: negative biomass accumulation, grosspp
 
 Import<-abs(ifelse(results_list[[k]]$BA<0,results_list[[k]]$BA,0))
-## [c(10:11) =>  c(10:11) represents the primary production row; adjust this column according to the corresponding row in the data]
-Import[c(10:11)]<-gross #change (PR)
+# Import<- REco$PB*REco$Biomass
+
+## [c(7) =>  c(7) represents the primary production row; adjust this column according to the corresponding row in the data]
+Import[c(7)]<-gross
 Import<-Import[1:(nliving+ndead)]
 
-# Assign biomass values 
+# Assign biomass values
 Biomass<-results_list[[k]]$Biomass[1:(nliving+ndead)]
 
 # Pack the model
@@ -565,7 +521,9 @@ write.csv(All_enar.res_sc,"All_enar_res_simul.csv")
 
 
 
-# Visualisation of resultats
+
+
+# Visualisation des resultats
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 library(stringr)
@@ -583,7 +541,6 @@ length(unique(All_enar.res_sc$scena1))
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 Rdt.All_enar.res_sc=All_enar.res_sc%>%group_by(scenario,scena1)%>% summarise(RDT=sum(Rdt.net,na.rm = T),FCI=mean(FCI),Profitability=sum(Profi,na.rm = T),n=n())
-
 
 # Reorganize and display according to the scenario number
 All_enar.res_sc_ord <- All_enar.res_sc %>%
@@ -620,7 +577,6 @@ summary_stats
 ```
 
 
-
 ### Summary
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE,fig.width=7,fig.height=2}
@@ -628,7 +584,7 @@ library(dplyr)
 
 # Filtrer les groupes et calculer les statistiques
 data_EEAll1 <- All_enar.res_sc %>%
-  filter(Group %in% c("Roach_juv","Tench_juv","MIB", "Zooplankton", "Phytoplankton", "Detritus", "Feed")) %>%
+  filter(Group %in% c("MIB", "Zooplankton", "Phytoplankton", "Detritus", "Feed")) %>%
   group_by(Group) %>%
   summarise(
     Minimum = min(EE, na.rm = TRUE),
@@ -641,14 +597,12 @@ data_EEAll1
 
 
 
+
 ## Net yield
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
-library(tidyverse)
 Rdt.All_enar.res_sc=All_enar.res_sc%>%group_by(scenario,scena1)%>% summarise(RDT=sum(Rdt.net,na.rm = T),FCI=mean(FCI),Profitability=sum(Profi,na.rm = T),n=n())
 
-
-## # Reorganize and display according to the scenario number
-
+# Reorganize and display according to the scenario number
 All_enar.res_sc_ord <- All_enar.res_sc %>%
   group_by(scenario, scena1) %>%
   summarise(
@@ -661,11 +615,16 @@ All_enar.res_sc_ord <- All_enar.res_sc %>%
   mutate(scena1_num = as.numeric(gsub("\\D", "", scena1))) %>%  # extrait les chiffres
   arrange(scena1_num)
 
+```
 
-## Ordre 1-> 3876 
+
+
+### Plot
+```{r,echo=FALSE,warning = FALSE,message = FALSE}
+## Plot : Ordre 1-> 18424
 
 All_enar.res_sc_ord <- All_enar.res_sc_ord %>%
-  mutate(scena1_num = factor(scena1_num, levels = as.character(1:3876)))
+  mutate(scena1_num = factor(scena1_num, levels = as.character(1:18424)))
 
 ggplot(All_enar.res_sc_ord,aes(x =scena1_num,y=RDT))+
   geom_point()+
@@ -678,71 +637,23 @@ ggplot(All_enar.res_sc_ord,aes(x =scena1_num,y=RDT))+
     panel.spacing = unit(0.1, "lines"),
     strip.text = element_text(color="black",size = 12),
     axis.text = element_text(color="black",size = 13),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="Scenario",y="Net yield (kg/ha)")
-```
-
-
-
-
-## Profitability 
-
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
-
-ggplot(All_enar.res_sc_ord,aes(x =scena1_num,y=Profitability))+
-  geom_point()+
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-    # panel.grid.major = element_line(colour = "grey75",size=0.5),
-    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-     panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
     # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
     axis.title = element_text(color="black",size = 16,face="bold"),
     legend.title = element_text(color="black",size = 14,face="bold"),
     legend.text = element_text(color="black",size = 13,face="bold")
       )+
-  labs(x="Scenario",y="Profitability ($/ha)")
+  labs(x="Scenarios: 1 \u2192 18424",y="Net yield (kg/ha)")
 ```
 
 
-## MIB
+## Profitability
+
+
+### Plot
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
-All_enar.res_sc <- All_enar.res_sc %>%
-  mutate(scena2 = factor(ceiling(row_number() / 9), levels = 1:3876))
-ggplot(All_enar.res_sc[All_enar.res_sc$Group=="MIB",],aes(x =scena2,y=EE))+
-  geom_point()+
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-     panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="Scenario",y="EE_Macroinvertebrate")
-```
 
-
-
-## Zooplankton
-
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
-ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Zooplancton",],aes(x =scena2,y=EE))+
+ggplot(All_enar.res_sc_ord,aes(x =scena1_num,y=Profitability))+
   geom_point()+
   theme_bw() +
   theme(
@@ -758,15 +669,71 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Zooplancton",],aes(x =scena2,y=EE
     legend.title = element_text(color="black",size = 14,face="bold"),
     legend.text = element_text(color="black",size = 13,face="bold")
       )+
-  labs(x="Scenario",y="EE_Zooplancton")
-
+  labs(x="Scenarios: 1 \u2192 18424",y="Profitability ($/ha)")
 ```
 
 
-## Phytoplankton
+## Finn cycling index (FCI)
+
+
+### Plot
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
-ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Phytoplancton",],aes(x =scena2,y=EE))+
+
+ggplot(All_enar.res_sc_ord,aes(x =scena1_num,y=FCI*100))+
+  geom_point()+
+  theme_bw() +
+  theme(
+    axis.line = element_line(colour = "black"),
+    legend.key = element_blank(),
+    panel.background = element_rect(fill = NA),
+    panel.grid = element_blank(),
+    panel.spacing = unit(0.1, "lines"),
+    strip.text = element_text(color="black",size = 12),
+    axis.text = element_text(color="black",size = 13),
+    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
+    axis.title = element_text(color="black",size = 16,face="bold"),
+    legend.title = element_text(color="black",size = 14,face="bold"),
+    legend.text = element_text(color="black",size = 13,face="bold")
+      )+
+  labs(x="Scenarios: 1 \u2192 18424",y="Finn cycling index (%)")
+```
+
+## Ecotrophic efficiency 
+
+
+### Boxplot for all available resources
+
+```{r,echo=FALSE,warning = FALSE,message = FALSE,fig.width=14}
+ggplot(All_enar.res_sc[All_enar.res_sc$Group%in%c("MIB","Zooplankton","Phytoplankton","Feed","Detritus"),], aes(x=EE, y=Group)) +
+  geom_boxplot() +
+  scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 0.5))+
+  stat_boxplot(geom="errorbar",width=0.5, coef=NULL)+
+  stat_summary(fun.y=mean, geom="point", shape=20, size=2, color="red", fill="red") +
+  theme_bw() +
+  theme(
+   axis.line = element_line(colour = "black"),
+    legend.key = element_blank(),
+    panel.background = element_rect(fill = NA),
+    panel.grid = element_blank(),
+    panel.spacing = unit(0.1, "lines"),
+    strip.text = element_text(color="black",size = 12),
+    axis.text = element_text(color="black",size = 13),
+    axis.title = element_text(color="black",size = 16,face="bold"),
+    legend.title = element_text(color="black",size = 14,face="bold"),
+    legend.text = element_text(color="black",size = 13,face="bold")
+      )+
+  labs(y="Group",x="Ecotrophic efficiency")
+```
+
+
+
+### Macroinvertebrate
+
+```{r,echo=FALSE,warning = FALSE,message = FALSE}
+All_enar.res_sc <- All_enar.res_sc %>%
+  mutate(scena2 = factor(ceiling(row_number() / 9), levels = 1:18424))
+ggplot(All_enar.res_sc[All_enar.res_sc$Group=="MIB",],aes(x =scena2,y=EE))+
   geom_point()+
   theme_bw() +
   theme(
@@ -784,12 +751,63 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Phytoplancton",],aes(x =scena2,y=
     legend.title = element_text(color="black",size = 14,face="bold"),
     legend.text = element_text(color="black",size = 13,face="bold")
       )+
-  labs(x="Scenario",y="EE_Phytoplancton")
+  labs(x="Scenarios: 1 \u2192 18424",y="EE_Macroinvertebrate")
+```
+
+
+### Zooplankton
+
+
+```{r,echo=FALSE,warning = FALSE,message = FALSE}
+ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Zooplankton",],aes(x =scena2,y=EE))+
+  geom_point()+
+  theme_bw() +
+  theme(
+    axis.line = element_line(colour = "black"),
+    legend.key = element_blank(),
+    panel.background = element_rect(fill = NA),
+   panel.grid = element_blank(),
+    panel.spacing = unit(0.1, "lines"),
+    strip.text = element_text(color="black",size = 12),
+    axis.text = element_text(color="black",size = 13),
+    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
+    axis.title = element_text(color="black",size = 16,face="bold"),
+    legend.title = element_text(color="black",size = 14,face="bold"),
+    legend.text = element_text(color="black",size = 13,face="bold")
+      )+
+  labs(x="Scenarios: 1 \u2192 18424",y="EE_Zooplancton")
 
 ```
 
 
-## Detritus
+
+### Phytoplankton
+
+```{r,echo=FALSE,warning = FALSE,message = FALSE}
+ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Phytoplankton",],aes(x =scena2,y=EE))+
+  geom_point()+
+  theme_bw() +
+  theme(
+    axis.line = element_line(colour = "black"),
+    legend.key = element_blank(),
+    panel.background = element_rect(fill = NA),
+    # panel.grid.major = element_line(colour = "grey75",size=0.5),
+    # panel.grid.minor = element_line(colour = "grey75",size=0.2),
+     panel.grid = element_blank(),
+    panel.spacing = unit(0.1, "lines"),
+    strip.text = element_text(color="black",size = 12),
+    axis.text = element_text(color="black",size = 13),
+    # axis.text.x = element_text(color="black",size = 13,angle=30,hjust=1),
+    axis.title = element_text(color="black",size = 16,face="bold"),
+    legend.title = element_text(color="black",size = 14,face="bold"),
+    legend.text = element_text(color="black",size = 13,face="bold")
+      )+
+  labs(x="Scenarios: 1 \u2192 18424",y="EE_Phytoplancton")
+
+```
+
+
+### Detritus
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Detritus",],aes(x =scena2,y=EE))+
@@ -810,13 +828,12 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Detritus",],aes(x =scena2,y=EE))+
     legend.title = element_text(color="black",size = 14,face="bold"),
     legend.text = element_text(color="black",size = 13,face="bold")
       )+
-  labs(x="Scenario",y="EE_Detritus")
+  labs(x="Scenarios: 1 \u2192 18424",y="EE_Detritus")
 
 ```
 
 
-## Feed
-
+### Feed
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Feed",],aes(x =scena2,y=EE))+
@@ -826,61 +843,9 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Feed",],aes(x =scena2,y=EE))+
     axis.line = element_line(colour = "black"),
     legend.key = element_blank(),
     panel.background = element_rect(fill = NA),
-   panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-    axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="Scenario",y="EE_Feed")
-
-```
-
-
-
-
-## FCI
-
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
-ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Grass_carp",],aes(x =scena2,y=FCI))+
-  geom_point()+
-  theme_bw() +
-  theme(
-    axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
-     panel.grid = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text = element_text(color="black",size = 12),
-    axis.text = element_text(color="black",size = 13),
-     axis.title = element_text(color="black",size = 16,face="bold"),
-    legend.title = element_text(color="black",size = 14,face="bold"),
-    legend.text = element_text(color="black",size = 13,face="bold")
-      )+
-  labs(x="Scenario",y="FCI")
-
-```
-
-
-# Boxplot
-
-## EE
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
-ggplot(All_enar.res_sc[All_enar.res_sc$Group%in%c("Roach_juv","Tench_juv","MIB","Zooplancton","Phytoplancton","Feed","Detritus"),], aes(x=EE, y=Group)) +
-  geom_boxplot() +
-  scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 0.5))+
-  stat_boxplot(geom="errorbar",width=0.5, coef=NULL)+
-  stat_summary(fun.y=mean, geom="point", shape=20, size=2, color="red", fill="red") +
-  theme_bw() +
-  theme(
-   axis.line = element_line(colour = "black"),
-    legend.key = element_blank(),
-    panel.background = element_rect(fill = NA),
     # panel.grid.major = element_line(colour = "grey75",size=0.5),
     # panel.grid.minor = element_line(colour = "grey75",size=0.2),
-    panel.grid = element_blank(),
+     panel.grid = element_blank(),
     panel.spacing = unit(0.1, "lines"),
     strip.text = element_text(color="black",size = 12),
     axis.text = element_text(color="black",size = 13),
@@ -889,54 +854,76 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group%in%c("Roach_juv","Tench_juv","MIB",
     legend.title = element_text(color="black",size = 14,face="bold"),
     legend.text = element_text(color="black",size = 13,face="bold")
       )+
-  labs(y="Group",x="Ecotrophic efficiency")
-```
+  labs(x="Scenarios: 1 \u2192 18424",y="EE_Feed")
 
+```
 
 
 # Screening scenario 
 
 ## Select the fish species with performance indicators (Ecotrophic efficiency, net yield, Finn Cycling Index)
 
-
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 # Scenario
-slct.scn= All_enar.res_sc[!All_enar.res_sc$Group%in%c("Roach_juv","Tench_juv","MIB","Zooplancton","Macrophyte","Phytoplancton","Feed","Detritus"),c(1,46,49,48)] %>% pivot_wider(names_from="Group", values_from="prc_scn")
+slct.scn= All_enar.res_sc[!All_enar.res_sc$Group%in%c("MIB","Zooplankton","Phytoplankton","Feed","Detritus"),c(1,48,46,49)] %>% pivot_wider(names_from="Group", values_from="prc_scn")
 
 ## rename
 slct.scn<- slct.scn %>%
-  rename(prc.Grass_carp = Grass_carp,
-         prc.Common_carp = Carp,
-         prc.Pike_perch = Pike_perch,
-         prc.Roach = Roach,
-         prc.Tench=Tench)
+  rename(prc.Striped_catfish = Striped_catfish,
+         prc.Silver_Carp = Silver_Carp,
+         prc.Clarias_macrocephalus = Clarias_macrocephalus,
+         prc.Common_carp = Common_carp)
 
 
 # EE
-slct.EE= All_enar.res_sc[!All_enar.res_sc$Group%in%c("Grass_carp","Carp","Pike_perch","Roach","Tench"),c(1,7,46,49)] %>% pivot_wider(names_from="Group", values_from="EE")
+slct.EE= All_enar.res_sc[!All_enar.res_sc$Group%in%c("Striped_catfish","Silver_Carp","Clarias_macrocephalus","Common_carp"),c(1,7,46,49)] %>% pivot_wider(names_from="Group", values_from="EE")
 
 ## rename
 slct.EE<- slct.EE %>%
-  rename(EE.Roach_juv = Roach_juv,
-         EE.Tench_juv = Tench_juv,
-         EE.Macroinvertebrate = MIB,
-         EE.Zooplancton=Zooplancton,
-         EE.Macrophyte=Macrophyte,
-         EE.Phytoplancton=Phytoplancton,
+  rename(EE.Macroinvertebrate = MIB,
+         EE.Zooplancton=Zooplankton,
+         EE.Phytoplancton=Phytoplankton,
+         EE.Feed=Feed,
          EE.Detritus=Detritus)
 
 # Rdt et FCI
+Rdt.All_enar.res_sc=All_enar.res_sc%>%group_by(scenario,scena1)%>% summarise(RDT=sum(Rdt.net,na.rm = T),FCI=mean(FCI),Profitability=sum(Profi,na.rm = T),n=n())
+
 
 # Merge
 merge.All_enar.res_sc=merge(slct.scn,slct.EE)
 merge.All_enar.res_sc=merge(merge.All_enar.res_sc,Rdt.All_enar.res_sc)
 
-```
+# print result
 
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
-write.csv(merge.All_enar.res_sc,"merge.All_enar.res_Simul.csv")
+write.csv(merge.All_enar.res_sc,"merge.All_enar.res_simul.csv")
 merge.All_enar.res_sc
 ```
+
+
+# Select the best scenario
+
+## Nombre de scenario ayant EE>1.1 [1.1 => insert value]
+```{r,echo=FALSE,warning = FALSE,message = FALSE}
+# select EE sup ou = 1.1
+dat.EE.selct=All_enar.res_sc[All_results_sc$EE > 1.1, ]
+
+# nombre de scenario ayant EE>1.1
+EE.sup=unique(dat.EE.selct$scenario)
+
+slct_All_enar.res_sc=All_enar.res_sc[!All_enar.res_sc$scenario%in%c(EE.sup),]
+```
+
+
+```{r,echo=FALSE,warning = FALSE,message = FALSE}
+
+## [1:2085 => insert value] => length(unique(slct_All_enar.res_sc$scena2))
+slct_All_enar.res_sc <- slct_All_enar.res_sc %>%
+  mutate(scena2 = factor(ceiling(row_number() / 9), levels = 1:2085))
+```
+
+
+
 
 
 
