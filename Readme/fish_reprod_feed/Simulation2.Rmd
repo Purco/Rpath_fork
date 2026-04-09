@@ -867,7 +867,7 @@ ggplot(All_enar.res_sc[All_enar.res_sc$Group=="Grass_carp",],aes(x =scena2,y=FCI
 # Boxplot
 
 ## EE
-```{r,echo=FALSE,warning = FALSE,message = FALSE}
+```{r,echo=FALSE,warning = FALSE,message = FALSE,fig.width=16}
 ggplot(All_enar.res_sc[All_enar.res_sc$Group%in%c("Roach_juv","Tench_juv","MIB","Zooplancton","Phytoplancton","Feed","Detritus"),], aes(x=EE, y=Group)) +
   geom_boxplot() +
   scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 0.5))+
@@ -935,7 +935,6 @@ merge.All_enar.res_sc=merge(merge.All_enar.res_sc,Rdt.All_enar.res_sc)
 
 ```{r,echo=FALSE,warning = FALSE,message = FALSE}
 write.csv(merge.All_enar.res_sc,"merge.All_enar.res_Simul.csv")
-merge.All_enar.res_sc
 ```
 
 
