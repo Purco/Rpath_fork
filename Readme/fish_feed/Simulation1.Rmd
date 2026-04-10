@@ -85,7 +85,7 @@ library(gtools)
 
 # Define the possible percentages (from 2 to 98 in steps of 2) => [Modify the values according to the chosen percentage steps]
 percentages <- seq(2, 98, by = 2)
-percentages 
+ 
 # Generate all possible combinations of percentages => [A, B, C, D correspond to the 4 selected species; modify this according to the number of species]
 combinations <- expand.grid(A = percentages, B = percentages, C = percentages, D = percentages) 
 
@@ -897,7 +897,7 @@ merge.All_enar.res_sc=merge(merge.All_enar.res_sc,Rdt.All_enar.res_sc)
 # print result
 
 write.csv(merge.All_enar.res_sc,"merge.All_enar.res_simul.csv")
-merge.All_enar.res_sc
+
 ```
 
 
